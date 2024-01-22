@@ -10,7 +10,6 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import PurchaseIssues from "./pages/PurchaseIssues";
 import Register from "./pages/Register";
-import RepAdjustment from "./pages/RepAdjustment";
 import './Style.scss'
 
 const Layout =()=>{
@@ -67,10 +66,7 @@ const router = createBrowserRouter([
         path: "/editcollection/:id",
         element: <AddCollection/>,
       },
-      {
-        path: "/repadjustment",
-        element:<RepAdjustment/>,
-      },
+
     ]
   },
 

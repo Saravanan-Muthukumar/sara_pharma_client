@@ -41,12 +41,6 @@ const Navbar = () => {
               <h6>COLLECTIONS</h6>
             </Link>    
           }
-          {currentUser && 
-          <Link className='link' to='/repadjustment'>
-            <h6>REP ADJUSTMENT</h6>
-          </Link>
-
-          }
 
           {currentUser && <span>{currentUser.username}</span>}
           {currentUser? <span onClick={handleSubmit}>Logout</span> : <Link to="/login" className='link'>Login</Link>}
