@@ -10,7 +10,7 @@ export const AuthContexProvider = ({ children }) => {
   );
 
   const login = async (inputs) => {
-    const res = await axios.post("https://deployserver-production-e464.up.railway.app/login1", inputs);
+    const res = await axios.post("https://octopus-app-l59s5.ondigitalocean.app//login1", inputs);
     setCurrentUser(res.data);
     console.log(currentUser)
   };
@@ -18,7 +18,7 @@ export const AuthContexProvider = ({ children }) => {
 
 
   const logout = async ()=> {
-    await axios.post("https://deployserver-production-e464.up.railway.app/logout");
+    await axios.post("https://octopus-app-l59s5.ondigitalocean.app//logout");
     setCurrentUser(null);
   };
 

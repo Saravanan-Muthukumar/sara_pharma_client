@@ -21,7 +21,7 @@ const Register = () => {
   const handleSubmit = async e =>{
     e.preventDefault();
     try{
-      const res = await axios.post("https://deployserver-production-e464.up.railway.app/register", inputs)
+      const res = await axios.post("https://octopus-app-l59s5.ondigitalocean.app//register", inputs)
       console.log(res)
       navigate('/login');
     }catch(err) {

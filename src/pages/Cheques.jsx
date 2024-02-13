@@ -11,13 +11,14 @@ const Cheques = () => {
     const [data, setData] = useState([]);
 
     const loadData = async () => {
-        const response = await axios.get('https://deployserver-production-e464.up.railway.app/getcheques');
+        // const response = await axios.get('https://deployserver-production-e464.up.railway.app/getcheques');
+        const response = await axios.get('https://octopus-app-l59s5.ondigitalocean.app/getcheques/');
         setData(response.data);
     }
 
     const handleDelete = (id) =>{
         if(window.confirm('Confirm Delete')) {
-            axios.post(`https://deployserver-production-e464.up.railway.app/deletecheque/${id}`);
+            axios.post(`https://octopus-app-l59s5.ondigitalocean.app/deletecheque/${id}`);
             setTimeout(()=>loadData(),500);
         }
     }
