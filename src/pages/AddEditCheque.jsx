@@ -19,7 +19,7 @@ const AddEditCheque = () => {
     const {id} = useParams();
 
     useEffect(()=>{
-        axios.get(`https://deployserver-production-e464.up.railway.app/getcheque/${id}`).then((resp)=>setState({...resp.data}));
+        axios.get(`https://octopus-app-l59s5.ondigitalocean.app/getcheque/${id}`).then((resp)=>setState({...resp.data}));
     },[id]);
     console.log(state)
 
@@ -29,7 +29,7 @@ const AddEditCheque = () => {
             console.log("Enter values");
         } else {
             if(!id){
-                axios.post ('https://deployserver-production-e464.up.railway.app/addcheque', {
+                axios.post ('https://octopus-app-l59s5.ondigitalocean.app/addcheque', {
                     chq_no,
                     chq_date,
                     supplier_name,
@@ -44,7 +44,7 @@ const AddEditCheque = () => {
             } else {
                 console.log('put');
                 console.log(state)
-                axios.put (`https://deployserver-production-e464.up.railway.app/editcheque/${id}`, {
+                axios.put (`https://octopus-app-l59s5.ondigitalocean.app/editcheque/${id}`, {
                     chq_no,
                     chq_date,
                     supplier_name,
