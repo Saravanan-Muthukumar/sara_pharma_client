@@ -33,7 +33,7 @@ console.log("id for purchase issue edit", id)
 
 
 useEffect(()=>{
-  axios.get(`https://deployserver-production-e464.up.railway.app/getcollection/${id}`).then((resp)=>setState({...resp.data}));
+  axios.get(`https://octopus-app-l59s5.ondigitalocean.app/getcollection/${id}`).then((resp)=>setState({...resp.data}));
 },[id]);
 
 console.log(state)
@@ -51,7 +51,7 @@ const handleSubmit = (e)=>{
   } else {
       if(!id){
           console.log("state is ", state)
-          axios.post ('https://deployserver-production-e464.up.railway.app/addcollection', {
+          axios.post ('https://octopus-app-l59s5.ondigitalocean.app/addcollection', {
             recorded_by,
             date_recorded,
             customer_name,
@@ -68,7 +68,7 @@ const handleSubmit = (e)=>{
           
       } else {
           console.log(state)
-          axios.put (`https://deployserver-production-e464.up.railway.app/editcollection/${id}`, {
+          axios.put (`https://octopus-app-l59s5.ondigitalocean.app/editcollection/${id}`, {
             recorded_by,
             date_recorded : moment(date_recorded).format('YYYY-MM-D'),
             customer_name,
