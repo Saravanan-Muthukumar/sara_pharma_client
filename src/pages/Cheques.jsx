@@ -11,7 +11,7 @@ import { AuthContext } from "../context/authContext";
 
 const Cheques = () => {
     const [data, setData] = useState([]);
-    const {currentUser, logout} = useContext(AuthContext);
+    const {currentUser} = useContext(AuthContext);
 
     const loadData = async () => {
         // const response = await axios.get('https://deployserver-production-e464.up.railway.app/getcheques');
