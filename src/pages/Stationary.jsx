@@ -97,7 +97,7 @@ const Stationary = () => {
                                 <td>{item.invoice_number}</td>
                                 <td>{moment(item.invoice_date).format('D MMMM YYYY')}</td>
                                 <td>{item.invoice_amnt}</td>
-                                {editPaid!=item.stationary_id && <td onClick={()=>handleEdit(item.stationary_id)} style={{cursor: "pointer"}}>{item.date_paid?moment(item.date_paid).format('D MMMM YYYY'):"Pending"}</td> }
+                                {editPaid!==item.stationary_id && <td onClick={()=>handleEdit(item.stationary_id)} style={{cursor: "pointer"}}>{item.date_paid?moment(item.date_paid).format('D MMMM YYYY'):"Pending"}</td> }
                                 {editPaid===item.stationary_id && <td style={{cursor: "pointer"}}>
                                     <input onChange={e=>setDatePaid(e.target.value)} type="date"></input>
                                     <button onClick={()=>handleSubmitPaid(item.stationary_id)}>Save</button>
