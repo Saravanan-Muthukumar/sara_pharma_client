@@ -1,14 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link} from "react-router-dom";
 import './Cheques.css'
 import axios from "axios";
 import Edit from '../img/edit.png'
 import Delete from '../img/delete.png'
 import moment from 'moment';
+import Login from "./Login";
+import { AuthContext } from "../context/authContext";
 
 
 const Cheques = () => {
     const [data, setData] = useState([]);
+    const {currentUser, logout} = useContext(AuthContext);
 
     const loadData = async () => {
         // const response = await axios.get('https://deployserver-production-e464.up.railway.app/getcheques');
@@ -40,7 +43,11 @@ const Cheques = () => {
     }
 
     return ( 
-        <div>
+        <div>  
+        
+        {
+            currentUser ?
+            <div>
             <div className="add-staff">
                 <Link to="/addcheque">
                     <button className="btn btn-staff">Add Cheque</button>
@@ -78,7 +85,8 @@ const Cheques = () => {
                         )
                     })}
                 </tbody>
-            </table>
+            </table> </div> : <Login/>}
+            
         </div>
      );
 }

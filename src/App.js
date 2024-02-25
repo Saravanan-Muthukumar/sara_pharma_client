@@ -11,6 +11,8 @@ import Login from "./pages/Login";
 import PurchaseIssues from "./pages/PurchaseIssues";
 import Register from "./pages/Register";
 import './Style.scss'
+import Stationary from "./pages/Stationary";
+import AddEditStationary from "./pages/AddEditStationary";
 
 const Layout =()=>{
   return (
@@ -33,6 +35,18 @@ const router = createBrowserRouter([
       {
         path: "/cheques",
         element: <Cheques/>,
+      },
+      {
+        path: "/stationary",
+        element: <Stationary/>,
+      },
+      {
+        path: "/addstationary",
+        element: <AddEditStationary/>,
+      },
+      {
+        path: "/editstationary/:id",
+        element: <AddEditStationary/>,
       },
       {
         path: "/addcheque",

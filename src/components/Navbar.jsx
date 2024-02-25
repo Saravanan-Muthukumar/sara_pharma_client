@@ -32,6 +32,11 @@ const Navbar = () => {
             </Link>     
           }
           {currentUser && 
+            <Link className='link' to='/stationary'>
+              <h6>STATIONARY</h6>
+            </Link>     
+          }
+          {currentUser && 
             <Link className='link' to='/issues'>
               <h6>PURCHASE ISSUES</h6>
             </Link>    
