@@ -11,7 +11,7 @@ import { AuthContext } from "../context/authContext";
 
 const Stationary = () => {
     const [data, setData] = useState([]);
-    const {currentUser, logout} = useContext(AuthContext);
+    const {currentUser} = useContext(AuthContext);
     const [editPaid, setEditPaid] = useState('')
     const [datePaid, setDatePaid] = useState('')
 
