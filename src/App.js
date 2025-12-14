@@ -13,6 +13,7 @@ import Register from "./pages/Register";
 import './Style.scss'
 import Stationary from "./pages/Stationary";
 import AddEditStationary from "./pages/AddEditStationary";
+import Billing from "./pages/Billing";
 
 const Layout =()=>{
   return (
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
       {
         path: "/collection",
         element: <Collection/>,
+      },
+      {
+        path: "/billing",
+        element: <Billing/>,
       },
       {
         path: "/addcollection",
