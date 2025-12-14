@@ -43,7 +43,7 @@ const Navbar = () => {
           }
           {currentUser && 
             <Link className='link' to='/collection'>
-              <h6>COLLECTIONSSS</h6>
+              <h6>COLLECTIONS</h6>
             </Link>    
           }
           {currentUser && 
