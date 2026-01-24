@@ -72,7 +72,7 @@ const Stationary = () => {
             <div>
             <div className="add-staff">
                 <Link to="/addstationary">
-                    <button className="btn btn-staff">Add Invoice</button>
+                    <button className="btn btn-staff">Add Invoiceee</button>
                 </Link>
             </div>
 
