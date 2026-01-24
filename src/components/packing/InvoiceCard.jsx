@@ -10,29 +10,29 @@ import {
 
 /** Running duration HH:MM:SS (updates every second) */
 const RunningDurationHMS = ({ startTs }) => {
-//   const [tick, setTick] = useState(0);
+  const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    const t = setInterval(() => setTick((x) => x + 1), 1000);
+    const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // ✅ compute directly (no useMemo => no eslint dependency warnings)
-  const { hh, mm, ss } = durationPartsHMS(startTs);
+  // use `now` so ESLint knows state is used
+  const { hh, mm, ss } = durationPartsHMS(startTs, now);
 
   return <span className="text-gray-700">{hh}:{mm}:{ss}</span>;
 };
 
 /** Running duration HH:MM (updates every minute) */
 const RunningDurationHM = ({ startTs }) => {
-//   const [tick, setTick] = useState(0);
+  const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    const t = setInterval(() => setTick((x) => x + 1), 60000);
+    const t = setInterval(() => setNow(Date.now()), 60000);
     return () => clearInterval(t);
   }, []);
 
-  const { hh, mm } = durationPartsHM(startTs);
+  const { hh, mm } = durationPartsHM(startTs, now);
 
   return <span className="text-gray-700">{hh}:{mm}</span>;
 };
@@ -61,7 +61,7 @@ const InvoiceCard = ({
   const isInProgressStatus =
     it.status === "TAKING_IN_PROGRESS" || it.status === "VERIFY_IN_PROGRESS";
 
-  // ✅ seconds only in in-progress tabs (not ALL)
+  // seconds only in in-progress tabs (not ALL)
   const showSeconds =
     !isAllTab &&
     (activeFilter === "TAKING_IN_PROGRESS" || activeFilter === "VERIFY_IN_PROGRESS");
