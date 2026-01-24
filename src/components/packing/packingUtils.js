@@ -1,13 +1,8 @@
 import moment from "moment";
 
-/* =========================
-   API
-========================= */
 export const API = "https://octopus-app-l59s5.ondigitalocean.app";
 
-/* =========================
-   STATUS TEXT (invoice card)
-========================= */
+/** Status text shown inside invoice cards (chip text) */
 export const STATUS_TEXT = {
   TAKING_IN_PROGRESS: "Taking now",
   TAKING_DONE: "Take completed",
@@ -15,9 +10,7 @@ export const STATUS_TEXT = {
   COMPLETED: "Packed",
 };
 
-/* =========================
-   FILTER TABS
-========================= */
+/** Tabs (TAKING_DONE tab heading = To verify) */
 export const FILTERS = [
   { key: "TAKING_IN_PROGRESS", label: "Taking now", statuses: ["TAKING_IN_PROGRESS"] },
   { key: "TAKING_DONE", label: "To verify", statuses: ["TAKING_DONE"] },
@@ -26,68 +19,83 @@ export const FILTERS = [
   { key: "ALL", label: "All", statuses: null },
 ];
 
-/* =========================
-   HELPERS
-========================= */
-export const isBlank = (v) =>
-  v === undefined || v === null || String(v).trim() === "";
+export const isBlank = (v) => v === undefined || v === null || String(v).trim() === "";
 
-/* =========================
-   TIME FORMATTERS
-========================= */
-export const fmtTime = (ts) =>
-  ts ? moment(ts).format("h:mm A") : "-";
+/** Time format (only time, no date) */
+export const fmtTime = (ts) => (ts ? moment(ts).format("h:mm A") : "-");
 
-/* =========================
-   DURATION (HH:MM)
-   Used in ALL tab
-========================= */
-export const durationPartsHM = (startTs) => {
+/** Duration parts (HH:MM) - used for ALL tab in-progress */
+export const durationPartsHM = (startTs, nowMs = Date.now()) => {
   if (!startTs) return { hh: "00", mm: "00" };
-
   const start = new Date(startTs).getTime();
-  const now = Date.now();
+  const now = nowMs;
   if (!Number.isFinite(start) || now < start) return { hh: "00", mm: "00" };
 
   const totalMin = Math.floor((now - start) / 60000);
   const hh = String(Math.floor(totalMin / 60)).padStart(2, "0");
   const mm = String(totalMin % 60).padStart(2, "0");
-
   return { hh, mm };
 };
 
-/* =========================
-   DURATION (HH:MM:SS)
-   Used in in-progress tabs
-========================= */
-export const durationPartsHMS = (startTs) => {
+/** Duration parts (HH:MM:SS) - used for in-progress tabs */
+export const durationPartsHMS = (startTs, nowMs = Date.now()) => {
   if (!startTs) return { hh: "00", mm: "00", ss: "00" };
-
   const start = new Date(startTs).getTime();
-  const now = Date.now();
-  if (!Number.isFinite(start) || now < start)
-    return { hh: "00", mm: "00", ss: "00" };
+  const now = nowMs;
+  if (!Number.isFinite(start) || now < start) return { hh: "00", mm: "00", ss: "00" };
 
   const totalSec = Math.floor((now - start) / 1000);
   const hh = String(Math.floor(totalSec / 3600)).padStart(2, "0");
   const mm = String(Math.floor((totalSec % 3600) / 60)).padStart(2, "0");
   const ss = String(totalSec % 60).padStart(2, "0");
-
   return { hh, mm, ss };
 };
 
-/* =========================
-   UI STYLES
-========================= */
+/** ✅ Invoice prefix rule A:
+ * - if starts with SA0 => keep
+ * - else if starts with SA => replace SA with SA0 (SA1234 -> SA01234)
+ * - else prefix SA0
+ */
+export const formatInvoiceNumber = (raw) => {
+  const s = String(raw ?? "").trim();
+  if (!s) return "";
+  const upper = s.toUpperCase();
 
-/* Grey status chip */
+  if (upper.startsWith("SA0")) return upper;
+  if (upper.startsWith("SA")) return "SA0" + upper.slice(2);
+  return "SA0" + upper;
+};
+
+/** Proper Case (Title Case) for customer/staff */
+export const toTitleCase = (input) => {
+  const s = String(input ?? "").trim();
+  if (!s) return "";
+  return s
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : ""))
+    .join(" ");
+};
+
+/** Value formatting: "₹ 34,556" (no decimals, keep commas) */
+export const formatINR = (value) => {
+  if (value === null || value === undefined || String(value).trim() === "") return "-";
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "-";
+
+  const rounded = Math.round(n);
+  const formatted = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(rounded);
+  return `₹ ${formatted}`;
+};
+
+/** ✅ Smaller grey status chip */
 export const statusChipClass = () =>
-  "h-9 min-w-[120px] inline-flex items-center justify-center rounded-md bg-gray-200 text-gray-800 text-xs tracking-wide";
+  "h-6 min-w-[96px] inline-flex items-center justify-center rounded-full bg-gray-200 text-gray-800 text-[11px]";
 
-/* Action buttons */
+/** ✅ Smaller action buttons */
 export const actionBtnClass = (type) => {
   const base =
-    "h-9 min-w-[120px] rounded-md px-3 text-xs tracking-wide shadow-sm transition active:scale-[0.98]";
+    "h-8 min-w-[96px] rounded-md px-2 text-[11px] tracking-wide shadow-sm transition active:scale-[0.98]";
 
   if (type === "TAKEN") return `${base} bg-teal-600 text-white hover:bg-teal-700`;
   if (type === "VERIFY") return `${base} bg-black text-white hover:bg-gray-900`;

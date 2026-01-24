@@ -223,12 +223,10 @@ const Packaging = () => {
         onOpenCreate={openCreate}
       />
 
-      <DatePicker
+        <DatePicker
         selectedDate={selectedDate}
         onChange={setSelectedDate}
-        onToday={setSelectedDate}
-        todayStr={todayStr}
-      />
+        />  
 
       <PackingTabs
         filters={FILTERS}

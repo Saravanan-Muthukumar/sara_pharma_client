@@ -7,12 +7,6 @@ const DatePicker = ({ selectedDate, onChange, onToday, todayStr }) => {
           onChange={(e) => onChange(e.target.value)}
           className="h-10 rounded-md border px-3 text-sm outline-none focus:border-teal-600"
         />
-        <button
-          onClick={() => onToday(todayStr)}
-          className="h-10 rounded-md border px-3 text-xs font-semibold hover:bg-gray-50"
-        >
-          Today
-        </button>
       </div>
     );
   };
