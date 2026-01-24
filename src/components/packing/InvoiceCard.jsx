@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   STATUS_TEXT,
   statusChipClass,
@@ -8,30 +8,31 @@ import {
   durationPartsHM,
 } from "./packingUtils";
 
-/** ✅ Running duration HH:MM:SS (updates every second) */
+/** Running duration HH:MM:SS (updates every second) */
 const RunningDurationHMS = ({ startTs }) => {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(() => setTick((x) => x + 1), 1000); // seconds run
+    const t = setInterval(() => setTick((x) => x + 1), 1000);
     return () => clearInterval(t);
   }, []);
 
-  const { hh, mm, ss } = useMemo(() => durationPartsHMS(startTs), [startTs, tick]);
+  // ✅ compute directly (no useMemo => no eslint dependency warnings)
+  const { hh, mm, ss } = durationPartsHMS(startTs);
 
   return <span className="text-gray-700">{hh}:{mm}:{ss}</span>;
 };
 
-/** ✅ Running duration HH:MM (updates every minute) */
+/** Running duration HH:MM (updates every minute) */
 const RunningDurationHM = ({ startTs }) => {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(() => setTick((x) => x + 1), 60000); // minute update (less noisy)
+    const t = setInterval(() => setTick((x) => x + 1), 60000);
     return () => clearInterval(t);
   }, []);
 
-  const { hh, mm } = useMemo(() => durationPartsHM(startTs), [startTs, tick]);
+  const { hh, mm } = durationPartsHM(startTs);
 
   return <span className="text-gray-700">{hh}:{mm}</span>;
 };
@@ -60,12 +61,11 @@ const InvoiceCard = ({
   const isInProgressStatus =
     it.status === "TAKING_IN_PROGRESS" || it.status === "VERIFY_IN_PROGRESS";
 
-  // ✅ seconds only in in-progress TABS (not ALL tab)
+  // ✅ seconds only in in-progress tabs (not ALL)
   const showSeconds =
     !isAllTab &&
     (activeFilter === "TAKING_IN_PROGRESS" || activeFilter === "VERIFY_IN_PROGRESS");
 
-  // ✅ Hide actions in ALL tab
   const actionButton = isAllTab
     ? null
     : canMarkTaken
@@ -114,11 +114,7 @@ const InvoiceCard = ({
 
             <span className="text-gray-300">•</span>
 
-            {/* ✅ In progress: duration
-                - seconds only in in-progress tabs
-                - ALL tab shows HH:MM only
-                ✅ Completed: only time
-            */}
+            {/* In progress: duration | Completed: only time */}
             {isInProgressStatus ? (
               showSeconds ? (
                 <RunningDurationHMS startTs={ts} />
@@ -131,7 +127,7 @@ const InvoiceCard = ({
           </div>
         </div>
 
-        {/* Right column: status + action in same column */}
+        {/* Right column */}
         <div className="shrink-0 flex flex-col items-stretch gap-2 w-[140px]">
           {isAllTab && (
             <button
@@ -142,7 +138,7 @@ const InvoiceCard = ({
             </button>
           )}
 
-          <span className={statusChipClass(isAllTab)}>
+          <span className={statusChipClass()}>
             {STATUS_TEXT[it.status] || it.status}
           </span>
 
