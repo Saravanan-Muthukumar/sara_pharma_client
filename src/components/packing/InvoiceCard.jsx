@@ -10,7 +10,7 @@ import {
 
 /** Running duration HH:MM:SS (updates every second) */
 const RunningDurationHMS = ({ startTs }) => {
-  const [tick, setTick] = useState(0);
+//   const [tick, setTick] = useState(0);
 
   useEffect(() => {
     const t = setInterval(() => setTick((x) => x + 1), 1000);
@@ -25,7 +25,7 @@ const RunningDurationHMS = ({ startTs }) => {
 
 /** Running duration HH:MM (updates every minute) */
 const RunningDurationHM = ({ startTs }) => {
-  const [tick, setTick] = useState(0);
+//   const [tick, setTick] = useState(0);
 
   useEffect(() => {
     const t = setInterval(() => setTick((x) => x + 1), 60000);
