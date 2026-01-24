@@ -5,7 +5,6 @@ import AddCollection from "./pages/AddCollection";
 import AddEditCheque from "./pages/AddEditCheque";
 import AddPurchaseIssue from "./pages/AddPurchaseIssue";
 import Cheques from "./pages/Cheques";
-import Collection from "./pages/Collection";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import PurchaseIssues from "./pages/PurchaseIssues";
@@ -14,16 +13,20 @@ import './Style.scss'
 import Stationary from "./pages/Stationary";
 import AddEditStationary from "./pages/AddEditStationary";
 import Billing from "./pages/Billing";
+import "./index.css";
+import Packaging from "./pages/Packaging";
 
-const Layout =()=>{
+const Layout = () => {
   return (
-    <>
-      <Navbar/>
-      <Outlet/>
-      <Footer/>
-    </>
-  )
-}
+    <div className="min-h-screen flex flex-col bg-white">
+      <Navbar />
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  );
+};
 const router = createBrowserRouter([
   {
     path: "/",
@@ -70,10 +73,6 @@ const router = createBrowserRouter([
         element: <AddPurchaseIssue/>,
       },
       {
-        path: "/collection",
-        element: <Collection/>,
-      },
-      {
         path: "/billing",
         element: <Billing/>,
       },
@@ -82,8 +81,8 @@ const router = createBrowserRouter([
         element: <AddCollection/>,
       },
       {
-        path: "/editcollection/:id",
-        element: <AddCollection/>,
+        path: "/package",
+        element: <Packaging/>,
       },
 
     ]
@@ -101,13 +100,8 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return (
-    <div className="app">
-      <div className="container">
-         <RouterProvider router={router} />
-      </div>
-    </div>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
+

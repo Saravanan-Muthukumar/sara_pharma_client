@@ -1,63 +1,152 @@
-import React, { useContext } from 'react'
-import Logo from '../img/logo.png'
-import { Link } from 'react-router-dom';
-import { AuthContext } from '../context/authContext';
-import { useNavigate } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import Logo from "../img/logo.png";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { AuthContext } from "../context/authContext";
 
+const NavLink = ({ to, children, onClick }) => (
+  <Link
+    to={to}
+    onClick={onClick}
+    className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-teal-700"
+  >
+    {children}
+  </Link>
+);
 
 const Navbar = () => {
-
-  const {currentUser, logout} = useContext(AuthContext);
+  const { currentUser, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSubmit = async () => {
-      await logout();
-      navigate("/login");
+  const [open, setOpen] = useState(false);
+
+  const closeMenu = () => setOpen(false);
+
+  const handleLogout = async () => {
+    await logout();
+    closeMenu();
+    navigate("/login");
   };
 
+  // Close menu when route changes
+  React.useEffect(() => {
+    closeMenu();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   return (
-    <div className='navbar'>
-      <div className="container">
-        <div className="logo">
-          <Link to="/"><img src={Logo} alt="" /></Link>
-        </div>
-        <div className="links">
-          <Link className='link' to='/'>
-            <h6>HOME</h6>
+    <header className="w-full border-b bg-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between py-3">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2">
+            <img src={Logo} alt="Sara Pharma" className="h-10 w-auto sm:h-12" />
           </Link>
-          {currentUser && 
-            <Link className='link' to='/cheques'>
-              <h6>CHEQUES</h6>
-            </Link>     
-          }
-          {currentUser && 
-            <Link className='link' to='/stationary'>
-              <h6>STATIONARY</h6>
-            </Link>     
-          }
-          {currentUser && 
-            <Link className='link' to='/issues'>
-              <h6>PURCHASE ISSUES</h6>
-            </Link>    
-          }
-          {currentUser && 
-            <Link className='link' to='/collection'>
-              <h6>COLLECTIONS</h6>
-            </Link>    
-          }
-          {currentUser && 
-            <Link className='link' to='/billing'>
-              <h6>BILLING</h6>
-            </Link>    
-          }
 
-          {currentUser && <span>{currentUser.username}</span>}
-          {currentUser? <span onClick={handleSubmit}>Logout</span> : <Link to="/login" className='link'>Login</Link>}
+          {/* Desktop nav */}
+          <nav className="hidden items-center gap-2 sm:flex">
+            <Link className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-teal-700" to="/">
+              HOME
+            </Link>
+
+            {currentUser && (
+              <>
+                
+                <Link className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-teal-700" to="/stationary">
+                  STATIONARY
+                </Link>
+                <Link className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-teal-700" to="/package">
+                  PACKING
+                </Link>
+              </>
+            )}
+
+            {currentUser && (
+              <span className="ml-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                {currentUser.username}
+              </span>
+            )}
+
+            {currentUser ? (
+              <button
+                onClick={handleLogout}
+                className="ml-2 rounded-md bg-teal-600 px-3 py-2 text-sm font-semibold text-white hover:bg-teal-700 active:bg-teal-800"
+              >
+                Logout
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="ml-2 rounded-md bg-teal-600 px-3 py-2 text-sm font-semibold text-white hover:bg-teal-700 active:bg-teal-800"
+              >
+                Login
+              </Link>
+            )}
+          </nav>
+
+          {/* Mobile hamburger */}
+          <button
+            className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 sm:hidden"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Open menu"
+          >
+            {/* icon */}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M4 6h16M4 12h16M4 18h16"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
         </div>
+
+        {/* Mobile menu panel */}
+        {open && (
+          <div className="pb-3 sm:hidden">
+            <div className="rounded-lg border bg-white p-2 shadow-sm">
+              <NavLink to="/" onClick={closeMenu}>HOME</NavLink>
+
+              {currentUser && (
+                <>
+                  <NavLink to="/cheques" onClick={closeMenu}>CHEQUES</NavLink>
+                  <NavLink to="/stationary" onClick={closeMenu}>STATIONARY</NavLink>
+                  <NavLink to="/issues" onClick={closeMenu}>PURCHASE ISSUES</NavLink>
+                  <NavLink to="/collection" onClick={closeMenu}>COLLECTIONS</NavLink>
+                  <NavLink to="/package" onClick={closeMenu}>PACKING</NavLink>
+
+                  <div className="mt-2 flex items-center justify-between px-3">
+                    <span className="text-xs font-semibold text-gray-600">
+                      {currentUser.username}
+                    </span>
+                    <button
+                      onClick={handleLogout}
+                      className="rounded-md bg-teal-600 px-3 py-2 text-xs font-semibold text-white"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {!currentUser && (
+                <div className="mt-2 px-3">
+                  <Link
+                    to="/login"
+                    onClick={closeMenu}
+                    className="block rounded-md bg-teal-600 px-3 py-2 text-center text-sm font-semibold text-white"
+                  >
+                    Login
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  )
-}
+    </header>
+  );
+};
 
 export default Navbar;
