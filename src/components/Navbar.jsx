@@ -110,12 +110,8 @@ const Navbar = () => {
 
               {currentUser && (
                 <>
-                  <NavLink to="/cheques" onClick={closeMenu}>CHEQUES</NavLink>
                   <NavLink to="/stationary" onClick={closeMenu}>STATIONARY</NavLink>
-                  <NavLink to="/issues" onClick={closeMenu}>PURCHASE ISSUES</NavLink>
-                  <NavLink to="/collection" onClick={closeMenu}>COLLECTIONS</NavLink>
                   <NavLink to="/package" onClick={closeMenu}>PACKING</NavLink>
-
                   <div className="mt-2 flex items-center justify-between px-3">
                     <span className="text-xs font-semibold text-gray-600">
                       {currentUser.username}
