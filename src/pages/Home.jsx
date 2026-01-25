@@ -51,7 +51,7 @@ const Home = () => {
       <div className="md:hidden px-4 py-16">
         <div className="grid grid-cols-1 gap-8">
           <Link
-            to="/packaging"
+            to="/package"
             className="
               group
               rounded-2xl
