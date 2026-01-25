@@ -17,7 +17,7 @@ const PackingHeader = ({ isAdmin, onOpenReport, onOpenCreate }) => {
             onClick={onOpenCreate}
             className="rounded-md bg-teal-600 px-3 py-2 text-sm text-white hover:bg-teal-700"
           >
-            Add Invoice
+            Add Invoice to take stock
           </button>
         </div>
       </div>

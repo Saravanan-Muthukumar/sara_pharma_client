@@ -10,7 +10,8 @@ const AddEditInvoiceForm = ({
   }) => {
     if (!open) return null;
   
-    const update = (k) => (e) => setValues((p) => ({ ...p, [k]: e.target.value }));
+    const update = (k) => (e) =>
+      setValues((p) => ({ ...p, [k]: e.target.value }));
   
     return (
       <div className="mt-4 space-y-3 rounded-lg border bg-white p-4 shadow-sm">
@@ -19,7 +20,9 @@ const AddEditInvoiceForm = ({
             {editingInvoice ? "Edit Invoice" : "Add Invoice"}
           </h2>
           {editingInvoice && (
-            <span className="text-xs text-gray-500">ID: {editingInvoice.invoice_id}</span>
+            <span className="text-xs text-gray-500">
+              ID: {editingInvoice.invoice_id}
+            </span>
           )}
         </div>
   
@@ -63,10 +66,11 @@ const AddEditInvoiceForm = ({
             className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
           />
   
+          {/* ✅ TAKEN BY (was staffName) */}
           <input
-            placeholder="Staff Name *"
-            value={values.staffName}
-            onChange={update("staffName")}
+            placeholder="Taken By *"
+            value={values.takenBy}
+            onChange={update("takenBy")}
             disabled={!isAdmin}
             className={`h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600 ${
               !isAdmin ? "bg-gray-100 cursor-not-allowed" : "bg-white"
@@ -76,16 +80,19 @@ const AddEditInvoiceForm = ({
   
         <div className="flex gap-2 pt-2">
           <button
+            type="button"
             onClick={onSave}
             disabled={saving}
             className="flex-1 rounded-md bg-teal-600 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
           >
             {saving ? "Saving..." : editingInvoice ? "Save Changes" : "Save"}
           </button>
+  
           <button
+            type="button"
             onClick={onCancel}
             disabled={saving}
-            className="flex-1 rounded-md border py-2 text-sm hover:bg-gray-50"
+            className="flex-1 rounded-md border py-2 text-sm hover:bg-gray-50 disabled:opacity-60"
           >
             Cancel
           </button>
