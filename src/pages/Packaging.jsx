@@ -36,6 +36,8 @@ import {
         });
         setItems(res.data || []);
       } catch (err) {
+        // keep silent for UX; log for debugging
+        // eslint-disable-next-line no-console
         console.error("Failed to load packing list", err);
       } finally {
         setLoading(false);
@@ -47,6 +49,44 @@ import {
     }, [load]);
   
     /* =====================
+       COUNTS FOR TABS
+    ===================== */
+    const statusCounts = useMemo(() => {
+      const counts = {
+        TAKING_IN_PROGRESS: 0,
+        TAKING_DONE: 0,
+        VERIFY_IN_PROGRESS: 0,
+        COMPLETED: 0,
+        ALL: items.length,
+      };
+  
+      for (const it of items) {
+        if (it.status === "TAKING_IN_PROGRESS") counts.TAKING_IN_PROGRESS += 1;
+        else if (it.status === "TAKING_DONE") counts.TAKING_DONE += 1;
+        else if (it.status === "VERIFY_IN_PROGRESS") counts.VERIFY_IN_PROGRESS += 1;
+        else if (it.status === "COMPLETED") counts.COMPLETED += 1;
+      }
+  
+      return counts;
+    }, [items]);
+  
+    const filterCount = useCallback(
+      (filterKey) => {
+        if (filterKey === "ALL") return statusCounts.ALL;
+  
+        const f = FILTERS.find((x) => x.key === filterKey);
+        if (!f || !f.statuses) return statusCounts.ALL;
+  
+        let total = 0;
+        for (const s of f.statuses) {
+          total += statusCounts[s] || 0;
+        }
+        return total;
+      },
+      [statusCounts]
+    );
+  
+    /* =====================
        FILTER ITEMS
     ===================== */
     const filteredItems = useMemo(() => {
@@ -56,42 +96,62 @@ import {
     }, [items, activeFilter]);
   
     /* =====================
-       STAFF REPORT (Taken + Verified)
-       - Taken: counted by staff_name (who created/took)
-       - Verified: counted by verifier_name (who verified)
+       STAFF REPORT (per staff)
+       - Taking now + Taken => staff_name
+       - Verifying now + Packed => verifier_name if present else staff_name
     ===================== */
     const report = useMemo(() => {
-      // Map: name -> { taken, verified }
       const map = new Map();
   
-      let grandTaken = 0;
-      let grandVerified = 0;
+      const ensure = (name) => {
+        if (!map.has(name)) {
+          map.set(name, {
+            takingNow: 0,
+            taken: 0,
+            verifyingNow: 0,
+            packed: 0,
+          });
+        }
+        return map.get(name);
+      };
+  
+      let grandTaken = 0;   // TAKING_DONE
+      let grandPacked = 0;  // COMPLETED
   
       for (const it of items) {
-        // TAKEN BY staff_name
         const staffRaw = String(it.staff_name || "").trim();
         const staff = staffRaw ? toTitleCase(staffRaw) : "";
-        if (staff) {
-          if (!map.has(staff)) map.set(staff, { taken: 0, verified: 0 });
-          map.get(staff).taken += 1;
-          grandTaken += 1;
-        }
   
-        // VERIFIED BY verifier_name
         const verRaw = String(it.verifier_name || "").trim();
         const verifier = verRaw ? toTitleCase(verRaw) : "";
-        if (verifier) {
-          if (!map.has(verifier)) map.set(verifier, { taken: 0, verified: 0 });
-          map.get(verifier).verified += 1;
-          grandVerified += 1;
+  
+        if (it.status === "TAKING_IN_PROGRESS") {
+          if (staff) ensure(staff).takingNow += 1;
+        } else if (it.status === "TAKING_DONE") {
+          if (staff) ensure(staff).taken += 1;
+          grandTaken += 1;
+        } else if (it.status === "VERIFY_IN_PROGRESS") {
+          const who = verifier || staff;
+          if (who) ensure(who).verifyingNow += 1;
+        } else if (it.status === "COMPLETED") {
+          const who = verifier || staff;
+          if (who) ensure(who).packed += 1;
+          grandPacked += 1;
         }
       }
   
       const rows = Array.from(map.entries())
-        .map(([name, v]) => ({ name, taken: v.taken, verified: v.verified }))
-        .sort((a, b) => (b.taken + b.verified) - (a.taken + a.verified));
+        .map(([name, v]) => ({
+          name,
+          takingNow: v.takingNow,
+          taken: v.taken,
+          verifyingNow: v.verifyingNow,
+          packed: v.packed,
+          total: v.takingNow + v.taken + v.verifyingNow + v.packed,
+        }))
+        .sort((a, b) => b.total - a.total);
   
-      return { rows, grandTaken, grandVerified };
+      return { rows, grandTaken, grandPacked };
     }, [items]);
   
     /* =====================
@@ -176,24 +236,34 @@ import {
           />
         </div>
   
-        {/* STATUS TABS (straight edges) */}
+        {/* STATUS TABS (straight edges + total) */}
         <div className="mt-4 w-full overflow-x-auto">
           <div className="inline-flex min-w-max rounded-md border bg-white">
             {FILTERS.map((f, idx) => {
               const active = activeFilter === f.key;
+              const count = filterCount(f.key);
+  
               return (
                 <button
                   key={f.key}
                   onClick={() => setActiveFilter(f.key)}
                   className={[
-                    "px-3 py-2 text-xs whitespace-nowrap transition",
+                    "px-3 py-2 text-xs whitespace-nowrap transition flex items-center gap-2",
                     idx !== 0 ? "border-l" : "",
                     active
                       ? "bg-teal-600 text-white"
                       : "bg-white text-gray-700 hover:bg-gray-50",
                   ].join(" ")}
                 >
-                  {f.label}
+                  <span>{f.label}</span>
+                  <span
+                    className={[
+                      "min-w-[22px] h-5 px-1 rounded-md text-[11px] inline-flex items-center justify-center",
+                      active ? "bg-white/20" : "bg-gray-200 text-gray-800",
+                    ].join(" ")}
+                  >
+                    {count}
+                  </span>
                 </button>
               );
             })}
@@ -226,10 +296,10 @@ import {
         {/* REPORT MODAL */}
         {isAdmin && reportOpen && (
           <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-3 md:items-center">
-            <div className="w-full max-w-lg rounded-lg bg-white shadow-lg">
+            <div className="w-full max-w-3xl rounded-lg bg-white shadow-lg">
               <div className="flex items-center justify-between border-b px-4 py-3">
                 <div>
-                  <div className="text-sm font-semibold text-gray-900">Staff Report</div>
+                  <div className="text-sm font-semibold text-gray-900">Report</div>
                   <div className="text-xs text-gray-500">Date: {selectedDate}</div>
                 </div>
                 <button
@@ -242,28 +312,30 @@ import {
               </div>
   
               <div className="px-4 py-3">
-                {/* Grand totals */}
+                {/* Grand totals (Taken + Packed) */}
                 <div className="grid grid-cols-2 gap-2">
                   <div className="rounded-md border bg-gray-50 p-3">
-                    <div className="text-xs text-gray-500">Grand Taken</div>
+                    <div className="text-xs text-gray-500">Total Taken</div>
                     <div className="text-lg font-semibold text-gray-900">
                       {report.grandTaken}
                     </div>
                   </div>
                   <div className="rounded-md border bg-gray-50 p-3">
-                    <div className="text-xs text-gray-500">Grand Verified</div>
+                    <div className="text-xs text-gray-500">Total Packed</div>
                     <div className="text-lg font-semibold text-gray-900">
-                      {report.grandVerified}
+                      {report.grandPacked}
                     </div>
                   </div>
                 </div>
   
-                {/* Table */}
+                {/* Staffwise table */}
                 <div className="mt-3 overflow-hidden rounded-md border">
                   <div className="grid grid-cols-12 bg-gray-100 px-3 py-2 text-[11px] text-gray-700">
-                    <div className="col-span-6">Staff</div>
-                    <div className="col-span-3 text-right">Taken</div>
-                    <div className="col-span-3 text-right">Verified</div>
+                    <div className="col-span-4">Staff</div>
+                    <div className="col-span-2 text-right">Taking</div>
+                    <div className="col-span-2 text-right">Taken</div>
+                    <div className="col-span-2 text-right">Verify</div>
+                    <div className="col-span-2 text-right">Packed</div>
                   </div>
   
                   {report.rows.length === 0 ? (
@@ -276,14 +348,20 @@ import {
                         key={r.name}
                         className="grid grid-cols-12 border-t px-3 py-2 text-sm"
                       >
-                        <div className="col-span-6 truncate text-gray-900">
+                        <div className="col-span-4 truncate text-gray-900">
                           {r.name}
                         </div>
-                        <div className="col-span-3 text-right text-gray-700">
+                        <div className="col-span-2 text-right text-gray-700">
+                          {r.takingNow}
+                        </div>
+                        <div className="col-span-2 text-right text-gray-700">
                           {r.taken}
                         </div>
-                        <div className="col-span-3 text-right text-gray-700">
-                          {r.verified}
+                        <div className="col-span-2 text-right text-gray-700">
+                          {r.verifyingNow}
+                        </div>
+                        <div className="col-span-2 text-right text-gray-700">
+                          {r.packed}
                         </div>
                       </div>
                     ))
