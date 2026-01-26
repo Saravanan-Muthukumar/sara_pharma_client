@@ -1,6 +1,5 @@
 import { useState, useEffect, useContext } from "react";
 import { Link, Navigate} from "react-router-dom";
-import './Cheques.css'
 import axios from "axios";
 import Edit from '../img/edit.png'
 import Delete from '../img/delete.png'

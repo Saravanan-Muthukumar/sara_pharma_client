@@ -1,3 +1,4 @@
+// src/components/Navbar.jsx  (updated: /package -> /packing)
 import React, { useContext, useState } from "react";
 import Logo from "../img/logo.png";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -45,17 +46,27 @@ const Navbar = () => {
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-2 sm:flex">
-            <Link className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-teal-700" to="/">
+            <Link
+              className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-teal-700"
+              to="/"
+            >
               HOME
             </Link>
 
             {currentUser && (
               <>
-                
-                <Link className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-teal-700" to="/stationary">
+                <Link
+                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-teal-700"
+                  to="/stationary"
+                >
                   STATIONARY
                 </Link>
-                <Link className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-teal-700" to="/package">
+
+                {/* ✅ changed here */}
+                <Link
+                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-teal-700"
+                  to="/packing"
+                >
                   PACKING
                 </Link>
               </>
@@ -90,7 +101,6 @@ const Navbar = () => {
             onClick={() => setOpen((v) => !v)}
             aria-label="Open menu"
           >
-            {/* icon */}
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path
                 d="M4 6h16M4 12h16M4 18h16"
@@ -106,12 +116,21 @@ const Navbar = () => {
         {open && (
           <div className="pb-3 sm:hidden">
             <div className="rounded-lg border bg-white p-2 shadow-sm">
-              <NavLink to="/" onClick={closeMenu}>HOME</NavLink>
+              <NavLink to="/" onClick={closeMenu}>
+                HOME
+              </NavLink>
 
               {currentUser && (
                 <>
-                  <NavLink to="/stationary" onClick={closeMenu}>STATIONARY</NavLink>
-                  <NavLink to="/package" onClick={closeMenu}>PACKING</NavLink>
+                  <NavLink to="/stationary" onClick={closeMenu}>
+                    STATIONARY
+                  </NavLink>
+
+                  {/* ✅ changed here */}
+                  <NavLink to="/packing" onClick={closeMenu}>
+                    PACKING
+                  </NavLink>
+
                   <div className="mt-2 flex items-center justify-between px-3">
                     <span className="text-xs font-semibold text-gray-600">
                       {currentUser.username}
