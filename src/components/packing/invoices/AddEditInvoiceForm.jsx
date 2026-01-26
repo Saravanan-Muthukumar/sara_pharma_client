@@ -1,6 +1,5 @@
 // src/components/packing/invoices/AddEditInvoiceForm.jsx
 import CustomerTypeaheadInput from "../customers/CustomerTypeaheadInput";
-import { formatInvoiceNumberSA0 } from "../packingUtils"; // add this import
 
 const AddEditInvoiceForm = ({
   open,
@@ -17,7 +16,6 @@ const AddEditInvoiceForm = ({
   const update = (k) => (e) => setValues((p) => ({ ...p, [k]: e.target.value }));
 
   const onSelectCustomer = (c) => {
-    // ✅ fill customer + rep + courier
     setValues((p) => ({
       ...p,
       customerName: c.customer_name || p.customerName,
@@ -39,16 +37,12 @@ const AddEditInvoiceForm = ({
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <input
-        placeholder="Invoice Number *"
-        value={values.invoiceNumber}
-        onChange={(e) =>
-            setValues((p) => ({
-            ...p,
-            invoiceNumber: formatInvoiceNumberSA0(e.target.value),
-            }))
-        }
-        className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+          placeholder="Invoice Number *"
+          value={values.invoiceNumber}
+          onChange={update("invoiceNumber")}
+          className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
         />
+
 
         <input
           placeholder="No. of Products *"
@@ -59,7 +53,7 @@ const AddEditInvoiceForm = ({
           className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
         />
 
-        {/* ✅ Customer typeahead */}
+        {/* ✅ Customer search + suggestion + autofill */}
         <CustomerTypeaheadInput
           open={open}
           value={values.customerName}
@@ -84,13 +78,15 @@ const AddEditInvoiceForm = ({
           className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
         />
 
-        {/* ✅ Sales Rep autofill */}
+        {/* ✅ Auto-filled Sales Rep (still editable) */}
         <input
           placeholder="Sales Rep (auto)"
           value={values.salesRep}
           onChange={update("salesRep")}
           className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
         />
+
+        {/* ✅ TAKEN BY */}
 
       </div>
 

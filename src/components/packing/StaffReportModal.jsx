@@ -1,3 +1,4 @@
+// src/components/packing/reports/StaffReportModal.jsx
 const StaffReportModal = ({ open, isAdmin, selectedDate, report, onClose }) => {
     if (!open || !isAdmin) return null;
   
@@ -30,14 +31,13 @@ const StaffReportModal = ({ open, isAdmin, selectedDate, report, onClose }) => {
                   <th className="px-3 py-2 text-left">Taken</th>
                   <th className="px-3 py-2 text-left">Verifying</th>
                   <th className="px-3 py-2 text-left">Packed</th>
-                  <th className="px-3 py-2 text-left">Grand Total</th>
                 </tr>
               </thead>
   
               <tbody>
                 {!report?.rows?.length ? (
                   <tr className="border-t">
-                    <td className="px-3 py-3 text-gray-500" colSpan={6}>
+                    <td className="px-3 py-3 text-gray-500" colSpan={5}>
                       No invoices for this date
                     </td>
                   </tr>
@@ -49,19 +49,17 @@ const StaffReportModal = ({ open, isAdmin, selectedDate, report, onClose }) => {
                       <td className="px-3 py-2">{r.taken}</td>
                       <td className="px-3 py-2">{r.verifying}</td>
                       <td className="px-3 py-2">{r.packed}</td>
-                      <td className="px-3 py-2 font-semibold">{r.total}</td>
                     </tr>
                   ))
                 )}
   
-                {/* TOTAL ROW */}
+                {/* ✅ TOTAL ROW (status totals only) */}
                 <tr className="border-t bg-gray-50">
-                  <td className="px-3 py-2 font-semibold">All Staff</td>
+                  <td className="px-3 py-2 font-semibold">Total</td>
                   <td className="px-3 py-2 font-semibold">{report?.totals?.taking || 0}</td>
                   <td className="px-3 py-2 font-semibold">{report?.totals?.taken || 0}</td>
                   <td className="px-3 py-2 font-semibold">{report?.totals?.verifying || 0}</td>
                   <td className="px-3 py-2 font-semibold">{report?.totals?.packed || 0}</td>
-                  <td className="px-3 py-2 font-semibold">{report?.totals?.total || 0}</td>
                 </tr>
               </tbody>
             </table>

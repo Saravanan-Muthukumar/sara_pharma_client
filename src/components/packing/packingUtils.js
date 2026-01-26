@@ -87,3 +87,70 @@ export const actionBtnClass = (type) => {
 
   return `${base} bg-gray-300 text-gray-800`;
 };
+
+export const formatInvoiceNumberSA0 = (input) => {
+    const raw = String(input ?? "").trim();
+    if (!raw) return "";
+  
+    // If user typed full like SA000123 keep digits only portion
+    const digits = raw.replace(/\D/g, "").slice(0, 5); // max 5 digits
+    const padded = digits.padStart(5, "0");
+  
+    return `SA0${padded}`; // length always 8 when digits present
+  };
+  
+  // validation for save
+  export const isValidInvoiceNumberSA0 = (value) => {
+    const s = String(value ?? "").trim().toUpperCase();
+    return /^SA0\d{5}$/.test(s);
+  };
+
+  const norm = (s) => String(s || "").trim();
+
+export const buildStaffReport = (rows = []) => {
+  const byStaff = new Map();
+
+  const inc = (staff, key) => {
+    const name = norm(staff);
+    if (!name) return;
+
+    if (!byStaff.has(name)) {
+      byStaff.set(name, { staff: name, taking: 0, taken: 0, verifying: 0, packed: 0, total: 0 });
+    }
+    const obj = byStaff.get(name);
+    obj[key] += 1;
+    obj.total += 1;
+  };
+
+  (rows || []).forEach((r) => {
+    const status = String(r.status || "").toUpperCase();
+    const takenBy = norm(r.taken_by);
+    const packedBy = norm(r.packed_by);
+
+    // in-progress counts
+    if (status === "TAKING") inc(takenBy, "taking");
+    if (status === "VERIFYING") inc(packedBy, "verifying");
+
+    // completed counts (must use completed_at)
+    if (r.take_completed_at) inc(takenBy, "taken");
+    if (r.pack_completed_at) inc(packedBy, "packed");
+  });
+
+  const rowsOut = Array.from(byStaff.values()).sort((a, b) =>
+    a.staff.localeCompare(b.staff, undefined, { sensitivity: "base" })
+  );
+
+  const totals = rowsOut.reduce(
+    (acc, r) => {
+      acc.taking += r.taking;
+      acc.taken += r.taken;
+      acc.verifying += r.verifying;
+      acc.packed += r.packed;
+      acc.total += r.total;
+      return acc;
+    },
+    { taking: 0, taken: 0, verifying: 0, packed: 0, total: 0 }
+  );
+
+  return { rows: rowsOut, totals, dayCount: rows.length };
+};

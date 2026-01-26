@@ -4,7 +4,6 @@ import {
   actionBtnClass,
   fmtTime,
   durationPartsHMS,
-  durationPartsHM,
   toTitleCase,
   formatINR,
 } from "./packingUtils";
@@ -23,19 +22,6 @@ const RunningDurationHMS = ({ startTs }) => {
   );
 };
 
-const RunningDurationHM = ({ startTs }) => {
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 60000);
-    return () => clearInterval(t);
-  }, []);
-  const { hh, mm } = durationPartsHM(startTs, now);
-  return (
-    <span>
-      {hh}:{mm}
-    </span>
-  );
-};
 
 const InvoiceCard = ({
   it,
@@ -56,8 +42,7 @@ const InvoiceCard = ({
 
   const takenByRaw = String(it.taken_by || "").trim();
   const packedByRaw = String(it.packed_by || "").trim();
-  const takenBy = toTitleCase(takenByRaw || "-");
-  const packedBy = toTitleCase(packedByRaw || "-");
+
 
   const isTaking = status === "TAKING";
   const isVerifying = status === "VERIFYING";
@@ -76,7 +61,7 @@ const InvoiceCard = ({
   }, [status, it.take_completed_at, it.pack_completed_at, it.updated_at, it.created_at]);
 
   const timeNode = isInProgress ? (
-    mode === "ALL" ? <RunningDurationHM startTs={startTs} /> : <RunningDurationHMS startTs={startTs} />
+    mode === "ALL" ? <RunningDurationHMS startTs={startTs} /> : <RunningDurationHMS startTs={startTs} />
   ) : (
     <span>{fmtTime(completionTs)}</span>
   );
@@ -139,8 +124,38 @@ const InvoiceCard = ({
     }
   }
 
-  const nameLabel = status === "TAKING" || status === "TO_VERIFY" ? "Taken By" : "Packed By";
-  const nameValue = status === "TAKING" || status === "TO_VERIFY" ? takenBy : packedBy;
+  let nameNode = null;
+
+  if (status === "TAKING" || status === "TO_VERIFY") {
+    nameNode = (
+      <span className="truncate">
+         {takenByRaw}
+      </span>
+    );
+  }
+  
+  if (status === "VERIFYING") {
+    nameNode = (
+      <span className="truncate">
+         {packedByRaw}
+      </span>
+    );
+  }
+  
+  if (status === "PACKED") {
+    nameNode = (
+        <div div className= "flex gap-6">
+                  <span className="truncate">
+        Taken by {takenByRaw}  
+      </span>
+      <span className="truncate">
+        Packed by {packedByRaw}
+      </span>
+        </div>
+
+      
+    );
+  }
 
   return (
     <div className="rounded-lg border bg-white p-3 shadow-sm">
@@ -167,9 +182,12 @@ const InvoiceCard = ({
           <span className="text-gray-300">•</span>
           <span className="truncate">{courier}</span>
           <span className="text-gray-300">•</span>
-          <span className="truncate">
-            {nameLabel}: {nameValue}
-          </span>
+          {nameNode && (
+            <>
+                <span className="text-gray-300">•</span>
+                {nameNode}
+            </>
+            )}
           <span className="text-gray-300">•</span>
           <span>{timeNode}</span>
         </div>

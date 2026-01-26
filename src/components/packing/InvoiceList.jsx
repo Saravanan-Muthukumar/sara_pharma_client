@@ -1,30 +1,42 @@
+// src/components/packing/InvoiceList.jsx
 import InvoiceCard from "./InvoiceCard";
 
 const InvoiceList = ({
-  items,
-  onEdit,
-  onMarkTaken,
-  onOpenVerify,
-  onMarkPacked,
-  activeFilter, // ✅ receive
+  list = [],
+  mode, // "MY_JOB" | "TO_TAKE" | "TO_VERIFY" | "BILLING" etc (InvoiceCard decides)
+  loading,
+  emptyText = "No bills",
+  currentUsername,
+  disableActions = false,
+  disableVerifyStartForRow, // fn(invoice)->bool
+  actions,
 }) => {
-  if (!items || items.length === 0) {
-    return <p className="mt-6 text-center text-sm text-gray-500">No invoices yet</p>;
+  if (!loading && (!list || list.length === 0)) {
+    return <div className="rounded-md border bg-white p-3 text-xs text-gray-500">{emptyText}</div>;
   }
 
   return (
-    <div className="mt-6 space-y-3">
-      {items.map((it) => (
-        <InvoiceCard
-          key={it.invoice_id}
-          it={it}
-          onEdit={onEdit}
-          onMarkTaken={onMarkTaken}
-          onOpenVerify={onOpenVerify}
-          onMarkPacked={onMarkPacked}
-          activeFilter={activeFilter} // ✅ pass down
-        />
-      ))}
+    <div className="space-y-3">
+      {(list || []).map((it) => {
+        const rowDisable =
+          typeof disableVerifyStartForRow === "function"
+            ? disableVerifyStartForRow(it) || disableActions
+            : disableActions;
+
+        return (
+          <InvoiceCard
+            key={it.invoice_id}
+            it={it}
+            mode={mode}
+            currentUsername={currentUsername}
+            onStartTaking={actions?.startTaking}
+            onMarkTaken={actions?.markTaken}
+            onStartVerify={actions?.startVerify}
+            onMarkPacked={actions?.markPacked}
+            disableActions={rowDisable}
+          />
+        );
+      })}
     </div>
   );
 };
