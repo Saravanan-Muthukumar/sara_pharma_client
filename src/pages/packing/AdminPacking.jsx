@@ -1,4 +1,5 @@
 // src/pages/packing/AdminPacking.jsx
+import { Link } from "react-router-dom";
 import { useContext, useMemo, useState } from "react";
 import { AuthContext } from "../../context/authContext";
 
@@ -83,6 +84,12 @@ const AdminPacking = () => {
             >
               Add Bills
             </button>
+            <Link
+              to="/packing/dayend"
+              className="inline-flex h-8 items-center rounded-md bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700"
+            >
+              Day End
+            </Link>
           </>
         }
       />
@@ -128,7 +135,10 @@ const AdminPacking = () => {
         report={report}
         onClose={() => setReportOpen(false)}
       />
+
     </div>
+
+    
   );
 };
 

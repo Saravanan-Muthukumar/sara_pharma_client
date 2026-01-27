@@ -1,10 +1,10 @@
-// ✅ If you want a full safe App.js (drop-in) that includes the /package redirect
+// App.js (updated with Day End route)
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
 import { useContext } from "react";
 
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
-
+import DayEndPage from "./pages/packing/DayEndPage"; // ✅ ADD
 import AddCollection from "./pages/AddCollection";
 import AddPurchaseIssue from "./pages/AddPurchaseIssue";
 import Home from "./pages/Home";
@@ -49,6 +49,14 @@ const PackingGate = () => {
   return <Navigate to="/packing/staff" replace />;
 };
 
+const AdminOnly = ({ children }) => {
+  const { currentUser } = useContext(AuthContext);
+  if (!currentUser) return <Navigate to="/login" replace />;
+  const role = String(currentUser?.role || "").toLowerCase();
+  if (role !== "admin") return <Navigate to="/packing" replace />;
+  return children;
+};
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -64,14 +72,17 @@ const router = createBrowserRouter([
       { path: "/addpurchaseissue/:id", element: <RequireAuth><AddPurchaseIssue /></RequireAuth> },
       { path: "/addcollection", element: <RequireAuth><AddCollection /></RequireAuth> },
 
-      // ✅ OLD URL redirect (this fixes your current 404)
+      // ✅ OLD URL redirect
       { path: "/package", element: <Navigate to="/packing" replace /> },
 
-      // ✅ NEW packing routes
+      // ✅ packing routes
       { path: "/packing", element: <PackingGate /> },
       { path: "/packing/staff", element: <RequireAuth><Packingstaff /></RequireAuth> },
       { path: "/packing/billing", element: <RequireAuth><BillingStaffPacking /></RequireAuth> },
       { path: "/packing/admin", element: <RequireAuth><AdminPacking /></RequireAuth> },
+
+      // ✅ Day End page (admin only)
+      { path: "/packing/dayend", element: <AdminOnly><DayEndPage /></AdminOnly> },
     ],
   },
   { path: "/login", element: <Login /> },
@@ -79,7 +90,6 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  // ✅ IMPORTANT: do NOT wrap AuthContexProvider here if it's already in index.js/main.jsx
   return <RouterProvider router={router} />;
 }
 
