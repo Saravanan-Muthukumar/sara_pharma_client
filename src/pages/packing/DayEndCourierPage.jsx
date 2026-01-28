@@ -13,6 +13,7 @@ const CourierTable = ({ rows, setRows }) => {
     return out;
   }, [rows]);
 
+
   const totalBox = (list) =>
     (list || []).reduce((sum, r) => sum + (Number(r.no_of_box) || 0), 0);
 
@@ -25,64 +26,134 @@ const CourierTable = ({ rows, setRows }) => {
     );
   };
 
-  const renderCourier = (label, list) => (
-    <div className="rounded-lg border bg-white p-3">
-      <div className="flex items-center justify-between">
-        <div className="text-sm font-semibold text-gray-900">{label}</div>
-        <div className="text-xs text-gray-600">
-          Total box: <b>{totalBox(list)}</b>
-        </div>
-      </div>
+  
 
-      <div className="mt-3 overflow-x-auto rounded-md border">
-        <table className="min-w-full text-xs">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-3 py-2 text-left">S.No</th>
-              <th className="px-3 py-2 text-left">Customer</th>
-              <th className="px-3 py-2 text-left">City</th>
-              <th className="px-3 py-2 text-left">Rep</th>
-              <th className="px-3 py-2 text-left">Invoices</th>
-              <th className="px-3 py-2 text-left">No. of Box</th>
-            </tr>
-          </thead>
+  const saveBoxCount = async (feedback_id, no_of_box) => {
+    try {
+      await axios.post(`${API}/api/feedback/box`, {
+        feedback_id,
+        no_of_box: no_of_box === "" || no_of_box == null ? null : Number(no_of_box),
+      });
+    } catch (e) {
+      console.error("Failed to save box count", e);
+      alert("Failed to save No. of Box");
+    }
+  };
 
-          <tbody>
-            {list.length === 0 ? (
-              <tr className="border-t">
-                <td colSpan={6} className="px-3 py-4 text-center text-gray-500">
-                  No rows
-                </td>
-              </tr>
-            ) : (
-              list.map((r, idx) => (
-                <tr key={r.feedback_id} className="border-t">
-                  <td className="px-3 py-2">{idx + 1}</td>
-                  <td className="px-3 py-2 font-semibold">{toTitleCase(r.customer_name)}</td>
-                  <td className="px-3 py-2">{toTitleCase(r.city)}</td>
-                  <td className="px-3 py-2">{toTitleCase(r.rep_name)}</td>
-                  <td className="px-3 py-2">{r.invoice_count || 0}</td>
-                  <td className="px-3 py-2">
-                    <input
-                      className="h-8 w-20 rounded-md border px-2 text-xs"
-                      value={r.no_of_box ?? ""}
-                      onChange={(e) => updateBox(r.feedback_id, e.target.value)}
-                      placeholder="-"
-                    />
-                  </td>
+
+  const grouped = useMemo(() => {
+    const out = { ST: {}, PROFESSIONAL: {} };
+  
+    (Array.isArray(rows) ? rows : []).forEach((r) => {
+      const courier = String(r.courier_name || "").toUpperCase();
+      const date = r.pack_completed_at
+        ? r.pack_completed_at.slice(0, 10)
+        : "Unknown";
+  
+      if (!out[courier]) return;
+  
+      if (!out[courier][date]) out[courier][date] = [];
+      out[courier][date].push(r);
+    });
+  
+    return out;
+  }, [rows]);
+
+  const renderCourier = (label, groups) => (
+    <div className="rounded-lg border bg-white p-2">
+      {Object.keys(groups).length === 0 ? (
+        <div className="text-xs text-gray-500">No rows</div>
+      ) : (
+        Object.entries(groups).map(([date, list]) => (
+          <div key={date} className="mt-3">
+            {/* ✅ Courier + Date header */}
+            <div className="mb-1 flex items-center justify-between">
+              <div className="text-sm font-semibold text-gray-900">
+                {label}
+                <span className="ml-2 text-[11px] font-normal text-gray-500">
+                  ({date})
+                </span>
+              </div>
+            </div>
+  
+            <div className="overflow-hidden rounded-md border">
+              <table className="w-full table-fixed text-[11px]">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="w-4 px-[2px] py-1 text-center font-medium">#</th>
+                  <th className="w-40 px-1 py-1 text-left font-medium">Customer</th>
+                  <th className="hidden sm:table-cell px-1 py-1 text-left font-medium">Rep</th>
+                  <th className="px-1 py-1 text-left font-medium">City</th>
+                  <th className="px-1 py-1 text-left font-medium">Box</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+                <tbody>
+                  {list.map((r, idx) => (
+                    <tr key={r.feedback_id} className="border-t">
+                      {/* S.No */}
+                      <td className="px-1 py-1 w-6 text-gray-600">
+                        {idx + 1}
+                      </td>
+  
+                      {/* Customer */}
+                      <td className="px-1 py-1 w-[40%] sm:w-[28%] font-semibold break-words">
+                        {toTitleCase(r.customer_name)}
+                      </td>
+  
+                      {/* Rep – desktop only */}
+                      <td className="hidden sm:table-cell px-1 py-1 w-[16%] break-words">
+                        {toTitleCase(r.rep_name)}
+                      </td>
+  
+                      {/* City */}
+                      <td className="px-1 py-1 w-[18%] sm:w-[14%] break-words">
+                        {toTitleCase(r.city)}
+                      </td>
+  
+                      {/* Box */}
+                      <td className="px-1 py-1 w-[20%] sm:w-[14%]">
+                        <div className="inline-flex items-center gap-1 pr-2">
+                          <input
+                            className="h-6 w-[30px] rounded-l-md border border-r-0 px-1 text-[11px] outline-none"
+                            value={r.no_of_box ?? ""}
+                            onChange={(e) =>
+                              setRows((prev) =>
+                                (Array.isArray(prev) ? prev : []).map((x) =>
+                                  x.feedback_id === r.feedback_id
+                                    ? { ...x, no_of_box: e.target.value }
+                                    : x
+                                )
+                              )
+                            }
+                            inputMode="numeric"
+                          />
+  
+                          <button
+                            type="button"
+                            className="h-6 w-8 rounded-r-md border text-green-700 hover:bg-green-50 flex items-center justify-center"
+                            title="Save"
+                            onClick={() =>
+                              saveBoxCount(r.feedback_id, r.no_of_box)
+                            }
+                          >
+                            ✓
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
-
   return (
     <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-      {renderCourier("ST", groups.ST)}
-      {renderCourier("Professional", groups.PROFESSIONAL)}
+      {renderCourier("ST", grouped.ST)}
+      {renderCourier("Professional", grouped.PROFESSIONAL)}
     </div>
   );
 };
@@ -98,7 +169,9 @@ const DayEndCourierPage = ({ onBack }) => {
     try {
       const res = await axios.post(`${API}/api/feedbacklist`, {});
       setRows(Array.isArray(res.data) ? res.data : []);
+      console.log(res.data)
     } catch (e) {
+      
       console.error("feedbacklist error:", e?.response?.data || e);  
       setErr(e?.response?.data?.message || "Failed to create courier list");
     } finally {
