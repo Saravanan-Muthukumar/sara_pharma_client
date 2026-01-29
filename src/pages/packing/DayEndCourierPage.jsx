@@ -162,7 +162,7 @@ const [confirmLoading, setConfirmLoading] = useState(false);
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-md border">
+            <div className="overflow-x-auto rounded-md border">
               <table className="w-full table-fixed text-[11px]">
                 <thead className="bg-gray-50 border-b">
                   <tr>
@@ -210,8 +210,8 @@ const [confirmLoading, setConfirmLoading] = useState(false);
 
                       <td className="px-1 py-1 w-[18%] sm:w-[16%]">
                         <div className="inline-flex items-center gap-1 pr-2">
-                          <input
-                            className="h-6 w-[30px] rounded-l-md border border-r-0 px-1 text-[11px] outline-none"
+                        <input
+                            className="h-7 w-[42px] rounded-l-md border border-r-0 px-1 text-[16px] sm:h-6 sm:w-[30px] sm:text-[11px] outline-none"
                             value={r.no_of_box ?? ""}
                             onChange={(e) => updateLocalBox(r.feedback_id, e.target.value)}
                             inputMode="numeric"
