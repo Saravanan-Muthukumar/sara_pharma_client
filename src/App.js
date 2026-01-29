@@ -22,6 +22,7 @@ import BillingStaffPacking from "./pages/packing/BillingStaffPacking";
 import AdminPacking from "./pages/packing/AdminPacking";
 
 import { AuthContext } from "./context/authContext";
+import DayEndCourierPage from "./pages/packing/DayEndCourierPage";
 
 const Layout = () => (
   <div className="min-h-screen flex flex-col bg-white">
@@ -83,6 +84,7 @@ const router = createBrowserRouter([
 
       // ✅ Day End page (admin only)
       { path: "/packing/dayend", element: <AdminOnly><DayEndPage /></AdminOnly> },
+      { path: "/packing/dayend/courier", element: <AdminOnly><DayEndCourierPage /></AdminOnly> },
     ],
   },
   { path: "/login", element: <Login /> },

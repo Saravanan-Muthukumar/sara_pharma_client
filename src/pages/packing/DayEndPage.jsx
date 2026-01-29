@@ -4,6 +4,7 @@ import { useInvoicesToday } from "../../hooks/packing/useInvoicesToday";
 import AddInvoiceModal from "../../components/packing/invoices/AddInvoiceModal";
 import { findMissingInvoices } from "../../components/packing/dayend/dayEndUtils";
 import DayEndCourierPage from "./DayEndCourierPage";
+import { Link } from "react-router-dom";
 
 const dateOnly = (d) => (d ? String(d).slice(0, 10) : "");
 
@@ -223,11 +224,18 @@ const DayEndPage = () => {
 
           <button
             type="button"
-            onClick={() => setShowCourierPage(true)}
+            
             disabled={missingList.length > 0}
             className="h-9 rounded-md bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
             >
-            Go to Courier Page
+            <Link
+  to="/packing/dayend/courier"
+  className={`h-9 inline-flex items-center rounded-md bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700 ${
+    missingList.length > 0 ? "pointer-events-none opacity-60" : ""
+  }`}
+>
+  Go to Courier Page
+</Link>
             </button>
 
         </div>

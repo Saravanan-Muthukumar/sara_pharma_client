@@ -1,33 +1,9 @@
 import { useMemo, useState } from "react";
 import axios from "axios";
 import { API, toTitleCase } from "../../components/packing/packingUtils";
+import { useNavigate } from "react-router-dom";
 
 const CourierTable = ({ rows, setRows }) => {
-  const groups = useMemo(() => {
-    const out = { ST: [], PROFESSIONAL: [] };
-    (Array.isArray(rows) ? rows : []).forEach((r) => {
-      const key = String(r.courier_name || "").toUpperCase();
-      if (key === "ST") out.ST.push(r);
-      if (key === "PROFESSIONAL") out.PROFESSIONAL.push(r);
-    });
-    return out;
-  }, [rows]);
-
-
-  const totalBox = (list) =>
-    (list || []).reduce((sum, r) => sum + (Number(r.no_of_box) || 0), 0);
-
-  const updateBox = (feedback_id, value) => {
-    const n = value === "" ? null : Number(value);
-    setRows((prev) =>
-      (Array.isArray(prev) ? prev : []).map((r) =>
-        r.feedback_id === feedback_id ? { ...r, no_of_box: Number.isFinite(n) ? n : null } : r
-      )
-    );
-  };
-
-  
-
   const saveBoxCount = async (feedback_id, no_of_box) => {
     try {
       await axios.post(`${API}/api/feedback/box`, {
@@ -40,101 +16,211 @@ const CourierTable = ({ rows, setRows }) => {
     }
   };
 
-
+  // ✅ group: courier -> date -> customer (aggregate invoice_count)
   const grouped = useMemo(() => {
     const out = { ST: {}, PROFESSIONAL: {} };
+
+    (Array.isArray(rows) ? rows : []).forEach((r) => {
+      const courier = String(r.courier_name || "").toUpperCase();
+      if (!out[courier]) return;
+
+      const date = r.pack_completed_at ? String(r.pack_completed_at).slice(0, 10) : "Unknown";
+
+      if (!out[courier][date]) out[courier][date] = {};
+
+      const key = String(r.customer_name || "").trim().toLowerCase(); // customer grouping key
+      if (!out[courier][date][key]) {
+        out[courier][date][key] = {
+          feedback_id: r.feedback_id, // keep one id to save box (latest wins)
+          customer_name: r.customer_name,
+          city: r.city,
+          rep_name: r.rep_name,
+          courier_name: r.courier_name,
+          pack_completed_at: r.pack_completed_at,
+          invoice_count: 0,
+          no_of_box: r.no_of_box ?? null,
+        };
+      }
+
+      out[courier][date][key].invoice_count += Number(r.invoice_count || 0) || 0;
+
+      // keep latest feedback_id & box if present
+      out[courier][date][key].feedback_id = r.feedback_id;
+      if (r.no_of_box !== undefined && r.no_of_box !== null && r.no_of_box !== "") {
+        out[courier][date][key].no_of_box = r.no_of_box;
+      }
+    });
+
+    // convert customer maps to arrays (stable order by customer name)
+    const normalize = (obj) =>
+      Object.fromEntries(
+        Object.entries(obj).map(([date, custMap]) => [
+          date,
+          Object.values(custMap).sort((a, b) =>
+            String(a.customer_name || "").localeCompare(String(b.customer_name || ""))
+          ),
+        ])
+      );
+
+    return {
+      ST: normalize(out.ST),
+      PROFESSIONAL: normalize(out.PROFESSIONAL),
+    };
+  }, [rows]);
+
+  const updateLocalBox = (feedback_id, value) => {
+    setRows((prev) =>
+      (Array.isArray(prev) ? prev : []).map((x) =>
+        x.feedback_id === feedback_id ? { ...x, no_of_box: value } : x
+      )
+    );
+  };
+
+const courierDate = new Date().toISOString().slice(0, 10);
+const [msg, setMsg] = useState("");
+const [err, setErr] = useState("");
+const [confirmLoading, setConfirmLoading] = useState(false);
+
+
+
+
+  const confirmAllCouriers = async () => {
+    const ids = (Array.isArray(rows) ? rows : []).map((r) => r.feedback_id).filter(Boolean);
+  
+    if (ids.length === 0) return;
+  
+    const ok = window.confirm(
+      `Confirm courier for ALL rows?\nCourier Date: ${courierDate}\nTotal Customers: ${ids.length}`
+    );
+    if (!ok) return;
+  
+    try {
+      setConfirmLoading(true);
+      setMsg("");
+      setErr("");
+  
+      const res = await axios.post(`${API}/api/feedback/confirm-courier-bulk`, {
+        feedback_ids: ids,
+        courier_date: courierDate,
+      });
+  
+      setMsg(`✅ ${res.data?.message || "Courier confirmed"}`);
+      // optional: refresh list
+      // await createCourierList();
+    } catch (e) {
+      const data = e?.response?.data;
+      if (data?.missing?.length) {
+        setErr(
+          `${data.message}. Missing boxes for: ` +
+            data.missing.map((m) => `${m.customer_name} (${m.courier_name})`).join(", ")
+        );
+      } else {
+        setErr(data?.message || "Failed to confirm courier");
+      }
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  const courierTotals = useMemo(() => {
+    const totals = { ST: 0, PROFESSIONAL: 0 };
   
     (Array.isArray(rows) ? rows : []).forEach((r) => {
       const courier = String(r.courier_name || "").toUpperCase();
-      const date = r.pack_completed_at
-        ? r.pack_completed_at.slice(0, 10)
-        : "Unknown";
-  
-      if (!out[courier]) return;
-  
-      if (!out[courier][date]) out[courier][date] = [];
-      out[courier][date].push(r);
+      if (courier === "ST" || courier === "PROFESSIONAL") {
+        totals[courier] += Number(r.no_of_box) || 0;
+      }
     });
   
-    return out;
+    return totals;
   }, [rows]);
 
-  const renderCourier = (label, groups) => (
+  
+
+  const renderCourier = (label, groupsByDate, date) => (
     <div className="rounded-lg border bg-white p-2">
-      {Object.keys(groups).length === 0 ? (
+
+      {Object.keys(groupsByDate).length === 0 ? (
+       <div>
         <div className="text-xs text-gray-500">No rows</div>
+        </div>
+        
       ) : (
-        Object.entries(groups).map(([date, list]) => (
+        Object.entries(groupsByDate).map(([date, list]) => (
           <div key={date} className="mt-3">
-            {/* ✅ Courier + Date header */}
-            <div className="mb-1 flex items-center justify-between">
+            {/* Courier + Date */}
+            <div className="mb-1 flex items-center justify-between px-6">
               <div className="text-sm font-semibold text-gray-900">
                 {label}
                 <span className="ml-2 text-[11px] font-normal text-gray-500">
                   ({date})
                 </span>
               </div>
+
+              <div className="text-[11px] text-gray-600">
+                Total Box: <b>{courierTotals[label.toUpperCase()] || 0}</b>
+              </div>
             </div>
-  
+
             <div className="overflow-hidden rounded-md border">
               <table className="w-full table-fixed text-[11px]">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="w-4 px-[2px] py-1 text-center font-medium">#</th>
-                  <th className="w-40 px-1 py-1 text-left font-medium">Customer</th>
-                  <th className="hidden sm:table-cell px-1 py-1 text-left font-medium">Rep</th>
-                  <th className="px-1 py-1 text-left font-medium">City</th>
-                  <th className="px-1 py-1 text-left font-medium">Box</th>
-                </tr>
-              </thead>
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="w-4 px-[2px] py-1 text-center font-medium">#</th>
+                    <th className="px-1 py-1 text-left font-medium w-[40%] sm:w-[30%]">
+                      Customer
+                    </th>
+                    <th className="px-1 py-1 text-left font-medium w-[22%] sm:w-[16%]">
+                      City
+                    </th>
+                    <th className="hidden sm:table-cell px-1 py-1 text-left font-medium w-[16%]">
+                      Rep
+                    </th>
+                    <th className="px-1 py-1 text-center font-medium w-[10%] sm:w-[10%]">
+                      Inv
+                    </th>
+                    <th className="px-1 py-1 text-left font-medium w-[18%] sm:w-[16%]">
+                      Box
+                    </th>
+                  </tr>
+                </thead>
+
                 <tbody>
                   {list.map((r, idx) => (
-                    <tr key={r.feedback_id} className="border-t">
-                      {/* S.No */}
-                      <td className="px-1 py-1 w-6 text-gray-600">
+                    <tr key={`${r.feedback_id}-${idx}`} className="border-t">
+                      <td className="px-[2px] py-1 w-4 text-center text-gray-600">
                         {idx + 1}
                       </td>
-  
-                      {/* Customer */}
-                      <td className="px-1 py-1 w-[40%] sm:w-[28%] font-semibold break-words">
+
+                      <td className="px-1 py-1 font-semibold break-words w-[40%] sm:w-[30%]">
                         {toTitleCase(r.customer_name)}
                       </td>
-  
-                      {/* Rep – desktop only */}
-                      <td className="hidden sm:table-cell px-1 py-1 w-[16%] break-words">
-                        {toTitleCase(r.rep_name)}
-                      </td>
-  
-                      {/* City */}
-                      <td className="px-1 py-1 w-[18%] sm:w-[14%] break-words">
+
+                      <td className="px-1 py-1 break-words w-[22%] sm:w-[16%]">
                         {toTitleCase(r.city)}
                       </td>
-  
-                      {/* Box */}
-                      <td className="px-1 py-1 w-[20%] sm:w-[14%]">
+
+                      <td className="hidden sm:table-cell px-1 py-1 break-words w-[16%]">
+                        {toTitleCase(r.rep_name)}
+                      </td>
+
+                      <td className="px-1 py-1 text-center w-[10%] sm:w-[10%]">
+                        {r.invoice_count || 0}
+                      </td>
+
+                      <td className="px-1 py-1 w-[18%] sm:w-[16%]">
                         <div className="inline-flex items-center gap-1 pr-2">
                           <input
                             className="h-6 w-[30px] rounded-l-md border border-r-0 px-1 text-[11px] outline-none"
                             value={r.no_of_box ?? ""}
-                            onChange={(e) =>
-                              setRows((prev) =>
-                                (Array.isArray(prev) ? prev : []).map((x) =>
-                                  x.feedback_id === r.feedback_id
-                                    ? { ...x, no_of_box: e.target.value }
-                                    : x
-                                )
-                              )
-                            }
+                            onChange={(e) => updateLocalBox(r.feedback_id, e.target.value)}
                             inputMode="numeric"
                           />
-  
                           <button
                             type="button"
                             className="h-6 w-8 rounded-r-md border text-green-700 hover:bg-green-50 flex items-center justify-center"
                             title="Save"
-                            onClick={() =>
-                              saveBoxCount(r.feedback_id, r.no_of_box)
-                            }
+                            onClick={() => saveBoxCount(r.feedback_id, r.no_of_box)}
                           >
                             ✓
                           </button>
@@ -150,10 +236,23 @@ const CourierTable = ({ rows, setRows }) => {
       )}
     </div>
   );
+
   return (
     <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
       {renderCourier("ST", grouped.ST)}
       {renderCourier("Professional", grouped.PROFESSIONAL)}
+      <div className="mt-4 flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={confirmAllCouriers}
+                  disabled={confirmLoading || rows.length === 0}
+                  className="h-9 rounded-md bg-green-600 px-4 text-xs font-semibold text-white hover:bg-green-700 disabled:opacity-60"
+                >
+                  {confirmLoading ? "Confirming..." : "Confirm Courier"}
+                </button>
+              </div>
+              {msg && <div className="mt-2 text-xs text-green-700">{msg}</div>}
+              {err && <div className="mt-2 text-xs text-red-600">{err}</div>}
     </div>
   );
 };
@@ -162,17 +261,23 @@ const DayEndCourierPage = ({ onBack }) => {
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState([]);
   const [err, setErr] = useState("");
+  const navigate = useNavigate();
 
   const createCourierList = async () => {
     setLoading(true);
     setErr("");
     try {
       const res = await axios.post(`${API}/api/feedbacklist`, {});
-      setRows(Array.isArray(res.data) ? res.data : []);
-      console.log(res.data)
+      const data = res.data;
+
+      if (Array.isArray(data)) {
+        setRows(data);
+      } else {
+        setRows(Array.isArray(data?.rows) ? data.rows : []);
+        console.log("mode:", data?.mode);
+      }
     } catch (e) {
-      
-      console.error("feedbacklist error:", e?.response?.data || e);  
+      console.error("feedbacklist error:", e?.response?.data || e);
       setErr(e?.response?.data?.message || "Failed to create courier list");
     } finally {
       setLoading(false);
@@ -190,13 +295,13 @@ const DayEndCourierPage = ({ onBack }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onBack}
-            className="h-8 rounded-md border px-3 text-xs hover:bg-gray-50"
-          >
-            Back
-          </button>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="h-8 rounded-md border px-3 text-xs hover:bg-gray-50"
+        >
+          Back
+        </button>
 
           <button
             type="button"
