@@ -162,7 +162,7 @@ const [confirmLoading, setConfirmLoading] = useState(false);
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded-md border">
+            <div className="overflow-hidden rounded-md border">
               <table className="w-full table-fixed text-[11px]">
                 <thead className="bg-gray-50 border-b">
                   <tr>
@@ -208,23 +208,23 @@ const [confirmLoading, setConfirmLoading] = useState(false);
                         {r.invoice_count || 0}
                       </td>
 
-                      <td className="px-1 py-1 w-[18%] sm:w-[16%]">
-                        <div className="inline-flex items-center gap-1 pr-2">
+                      <td className="px-1 py-1 w-[18%] sm:w-[16%] min-w-0">
+                      <div className="inline-flex items-center gap-[2px] max-w-full">
                         <input
-                            className="h-7 w-[42px] rounded-l-md border border-r-0 px-1 text-[16px] sm:h-6 sm:w-[30px] sm:text-[11px] outline-none"
-                            value={r.no_of_box ?? ""}
-                            onChange={(e) => updateLocalBox(r.feedback_id, e.target.value)}
-                            inputMode="numeric"
-                          />
-                          <button
-                            type="button"
-                            className="h-6 w-8 rounded-r-md border text-green-700 hover:bg-green-50 flex items-center justify-center"
-                            title="Save"
-                            onClick={() => saveBoxCount(r.feedback_id, r.no_of_box)}
-                          >
-                            ✓
-                          </button>
-                        </div>
+                          className="h-7 w-[28px] sm:h-6 sm:w-[30px] rounded-l-md border border-r-0 px-[2px] text-[16px] sm:text-[11px] outline-none"
+                          value={r.no_of_box ?? ""}
+                          onChange={(e) => updateLocalBox(r.feedback_id, e.target.value)}
+                          inputMode="numeric"
+                        />
+                        <button
+                          type="button"
+                          className="h-7 w-7 sm:h-6 sm:w-8 rounded-r-md border text-green-700 hover:bg-green-50 flex items-center justify-center"
+                          title="Save"
+                          onClick={() => saveBoxCount(r.feedback_id, r.no_of_box)}
+                        >
+                          ✓
+                        </button>
+                      </div>
                       </td>
                     </tr>
                   ))}
