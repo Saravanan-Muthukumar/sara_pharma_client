@@ -13,6 +13,7 @@ import PurchaseIssues from "./pages/PurchaseIssues";
 import Register from "./pages/Register";
 import Stationary from "./pages/Stationary";
 import AddEditStationary from "./pages/AddEditStationary";
+import FeedBackPage from "./pages/packing/FeedBackPage";
 
 import "./Style.scss";
 import "./index.css";
@@ -78,9 +79,12 @@ const router = createBrowserRouter([
 
       // ✅ packing routes
       { path: "/packing", element: <PackingGate /> },
+      
+      { path: "/feedback", element: <FeedBackPage /> },
       { path: "/packing/staff", element: <RequireAuth><Packingstaff /></RequireAuth> },
       { path: "/packing/billing", element: <RequireAuth><BillingStaffPacking /></RequireAuth> },
       { path: "/packing/admin", element: <RequireAuth><AdminPacking /></RequireAuth> },
+
 
       // ✅ Day End page (admin only)
       { path: "/packing/dayend", element: <AdminOnly><DayEndPage /></AdminOnly> },
