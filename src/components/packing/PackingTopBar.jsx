@@ -3,7 +3,7 @@ import { toTitleCase } from "./packingUtils";
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext";
 
-const PackingTopBar = ({ title, username, totals, onRefresh, rightActions }) => {
+const PackingTopBar = ({ title, username, totals, onRefresh, rightActions, onOpenTimeline }) => {
   const safeTotals = totals || { take: 0, verifyPacked: 0 };
 
   const { currentUser } = useContext(AuthContext);
@@ -30,6 +30,15 @@ const PackingTopBar = ({ title, username, totals, onRefresh, rightActions }) => 
                 Verify &amp; Packed: <b>{safeTotals.verifyPacked}</b>
               </span>
             )}
+            
+            <button
+              type="button"
+              onClick={onOpenTimeline}
+              className="ml-2 rounded-md border px-2 py-1 text-xs hover:bg-gray-50"
+            >
+              Timeline
+            </button>
+
           </div>
         </div>
 

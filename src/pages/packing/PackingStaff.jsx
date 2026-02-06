@@ -8,6 +8,7 @@ import { usePackingActions } from "../../hooks/packing/usePackingActions";
 import PackingTopBar from "../../components/packing/PackingTopBar";
 import SimpleTabs from "../../components/packing/SimpleTabs";
 import InvoiceList from "../../components/packing/InvoiceList";
+import StaffTimelineModal from "../../components/packing/StaffTimelineModal";
 
 import {
   getMyJob,
@@ -27,6 +28,7 @@ const PackingStaff = () => {
   const currentUsername = String(currentUser?.username || "").trim();
 
   const [activeTab, setActiveTab] = useState(TAB.MY_JOB);
+  const [timelineOpen, setTimelineOpen] = useState(false);
 
   const { rows, loading, error, refresh } = useInvoicesToday();
   const actions = usePackingActions({ currentUsername, refresh });
@@ -64,7 +66,7 @@ const PackingStaff = () => {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-3 py-4">
-      <PackingTopBar title="Packing" username={currentUsername} totals={totals} onRefresh={refresh} />
+      <PackingTopBar title="Packing" username={currentUsername} totals={totals} onRefresh={refresh} onOpenTimeline={() => setTimelineOpen(true)} />
 
       {disableStartButtons && (
         <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
@@ -103,6 +105,11 @@ const PackingStaff = () => {
           }}
         />
       </div>
+      <StaffTimelineModal
+        open={timelineOpen}
+        onClose={() => setTimelineOpen(false)}
+        username={currentUsername}
+      />
     </div>
   );
 };
