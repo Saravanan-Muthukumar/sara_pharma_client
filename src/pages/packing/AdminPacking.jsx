@@ -48,7 +48,23 @@ const AdminPacking = () => {
 
   const tabCounts = useMemo(() => getBillingCounts(rows), [rows]);
 
-  const currentList = useMemo(() => getBillingListByTab(rows, activeTab), [rows, activeTab]);
+  // const currentList = useMemo(() => getBillingListByTab(rows, activeTab), [rows, activeTab]);
+
+  const currentList = useMemo(() => {
+    const list = getBillingListByTab(rows, activeTab);
+  
+    // 🔽 ALL bills → descending
+    if (activeTab === "ALL") {
+      return [...(list || [])].sort((a, b) =>
+        String(b.invoice_number || "").localeCompare(String(a.invoice_number || ""))
+      );
+    }
+  
+    // 🔼 other tabs → ascending
+    return [...(list || [])].sort((a, b) =>
+      String(a.invoice_number || "").localeCompare(String(b.invoice_number || ""))
+    );
+  }, [rows, activeTab]);
 
   // ✅ use completed_at fields in report (your rules)
   const report = useMemo(() => buildStaffReport(rows), [rows]);

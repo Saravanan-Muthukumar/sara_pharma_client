@@ -32,11 +32,15 @@ const PackingStaff = () => {
 
   const { rows, loading, error, refresh } = useInvoicesToday();
   const actions = usePackingActions({ currentUsername, refresh });
+  const sortAscByInvoice = (arr) =>
+  [...(arr || [])].sort((a, b) =>
+    String(a.invoice_number || "").localeCompare(String(b.invoice_number || ""))
+  );
 
   // Lists derive from the SAME dataset (rows from /today)
-  const myJob = useMemo(() => getMyJob(rows, currentUsername), [rows, currentUsername]);
-  const toTake = useMemo(() => getToTake(rows), [rows]);
-  const toVerify = useMemo(() => getToVerify(rows), [rows]);
+  const myJob = useMemo(() => sortAscByInvoice(getMyJob(rows, currentUsername)), [rows, currentUsername]);
+  const toTake = useMemo(() => sortAscByInvoice(getToTake(rows)), [rows]);
+  const toVerify = useMemo(() => sortAscByInvoice(getToVerify(rows)), [rows]);
 
   const myJobCount = myJob.length;
   const disableStartButtons = myJobCount >= 2;
