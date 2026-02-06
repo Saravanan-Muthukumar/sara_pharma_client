@@ -108,14 +108,14 @@ const Home = () => {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-base font-semibold text-gray-900">
-                    Packaging
+                    Feedback
                   </p>
                   <span className="text-gray-400 transition group-active:translate-x-0.5">
                     ›
                   </span>
                 </div>
                 <p className="mt-0.5 text-xs text-gray-500">
-                  Take • Verify • Pack
+                  Call • Remarks • Ok
                 </p>
               </div>
             </div>
