@@ -1,119 +1,251 @@
-// src/components/packing/StaffTimelineModal.jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { API } from "../../components/packing/packingUtils";
+import { API, toTitleCase } from "../../components/packing/packingUtils";
 
-const StaffTimelineModal = ({ open, onClose, username }) => {
+const FeedbackPage = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [err, setErr] = useState("");
+  const [msg, setMsg] = useState("");
+
+  // search filters
+  const [customer, setCustomer] = useState("");
+  const [invoiceDate, setInvoiceDate] = useState("");
+  const [courierDate, setCourierDate] = useState("");
+
+  const load = async () => {
+    try {
+      setLoading(true);
+      setErr("");
+      setMsg("");
+
+      const res = await axios.get(`${API}/api/feedback/open`, {
+        params: {
+          customer: customer || undefined,
+          invoice_date: invoiceDate || undefined,
+          courier_date: courierDate || undefined,
+        },
+      });
+
+      const data = Array.isArray(res.data) ? res.data : [];
+
+      setRows(
+        data.map((r) => ({
+          ...r,
+          _stock_received:
+            r.stock_received === 1 || r.stock_received === true
+              ? "1"
+              : r.stock_received === 0 || r.stock_received === false
+              ? "0"
+              : "",
+          _stocks_ok:
+            r.stocks_ok === 1 || r.stocks_ok === true
+              ? "1"
+              : r.stocks_ok === 0 || r.stocks_ok === false
+              ? "0"
+              : "",
+          _follow_up: r.follow_up || "",
+          _saving: false,
+        }))
+      );
+    } catch (e) {
+      console.error("feedback/open error:", e?.response?.data || e);
+      setErr(e?.response?.data?.message || "Failed to load feedback");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!open) return;
-
-    const load = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const res = await axios.get(
-          `${API}/api/reports/staff-timeline`,
-          { params: { username } }
-        );
-        setRows(Array.isArray(res.data) ? res.data : []);
-      } catch (e) {
-        setError("Failed to load timeline");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     load();
-  }, [open, username]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  if (!open) return null;
+  const updateLocal = (id, patch) => {
+    setRows((prev) => prev.map((x) => (x.feedback_id === id ? { ...x, ...patch } : x)));
+  };
+
+  const saveRow = async (r) => {
+    try {
+      updateLocal(r.feedback_id, { _saving: true });
+      setErr("");
+      setMsg("");
+
+      const payload = {
+        feedback_id: r.feedback_id,
+        stock_received: r._stock_received === "" ? null : Number(r._stock_received), // 1/0
+        stocks_ok: r._stocks_ok === "" ? null : Number(r._stocks_ok), // 1/0
+        follow_up: r._follow_up === "" ? null : r._follow_up,
+      };
+
+      await axios.post(`${API}/api/feedback/update`, payload);
+
+      setMsg("✅ Saved");
+      await load();
+    } catch (e) {
+      console.error("feedback/update error:", e?.response?.data || e);
+      setErr(e?.response?.data?.message || "Save failed");
+    } finally {
+      updateLocal(r.feedback_id, { _saving: false });
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3">
-      <div className="w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-lg bg-white shadow-lg flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <div>
-            <div className="text-sm font-semibold">Staff Timeline</div>
-            <div className="text-xs text-gray-500">{username}</div>
+    <div className="mx-auto w-full max-w-6xl px-3 py-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-sm font-semibold text-gray-900">Feedback Follow-up</h1>
+          <div className="text-xs text-gray-500">
+            Showing items where <b>issue_resolved_time is NULL</b>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-sm hover:text-red-600"
-          >
-            ✕
-          </button>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-3">
-          {loading && <div className="text-xs text-gray-500">Loading…</div>}
-          {error && <div className="text-xs text-red-600">{error}</div>}
+        <button
+          type="button"
+          onClick={load}
+          disabled={loading}
+          className="h-8 rounded-md bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+        >
+          {loading ? "Loading..." : "Refresh"}
+        </button>
+      </div>
 
-          {!loading && !error && rows.length === 0 && (
-            <div className="text-xs text-gray-500 text-center">
-              No activity found
-            </div>
-          )}
+      {/* Filters */}
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
+        <input
+          value={customer}
+          onChange={(e) => setCustomer(e.target.value)}
+          placeholder="Search customer"
+          className="h-9 rounded-md border px-2 text-xs"
+        />
 
-          {!loading && rows.length > 0 && (
-            <table className="w-full text-xs border">
-              <thead className="bg-gray-100 sticky top-0">
-                <tr>
-                  <th className="border px-2 py-1">Start</th>
-                  <th className="border px-2 py-1">End</th>
-                  <th className="border px-2 py-1">Duration</th>
-                  <th className="border px-2 py-1">Action</th>
-                  <th className="border px-2 py-1">Customer</th>
-                  <th className="border px-2 py-1">Status</th>
+        <input
+          type="date"
+          value={invoiceDate}
+          onChange={(e) => setInvoiceDate(e.target.value)}
+          className="h-9 rounded-md border px-2 text-xs"
+        />
+
+        <input
+          type="date"
+          value={courierDate}
+          onChange={(e) => setCourierDate(e.target.value)}
+          className="h-9 rounded-md border px-2 text-xs"
+        />
+
+        <button
+          type="button"
+          onClick={load}
+          className="h-9 rounded-md border px-3 text-xs hover:bg-gray-50"
+        >
+          Search
+        </button>
+      </div>
+
+      {msg && <div className="mt-3 text-xs text-green-700">{msg}</div>}
+      {err && <div className="mt-3 text-xs text-red-600">{err}</div>}
+
+      {/* Table */}
+      <div className="mt-3 overflow-hidden rounded-md border bg-white">
+        <table className="w-full table-fixed text-[11px]">
+          <thead className="bg-gray-50 border-b">
+            <tr>
+              <th className="px-1 py-2 text-left font-medium w-[9%]">Courier Dt</th>
+              <th className="px-1 py-2 text-left font-medium w-[10%]">Customer</th>
+              <th className="px-1 py-2 text-left font-medium w-[9%]">Invoice Dt</th>
+              <th className="px-1 py-2 text-center font-medium w-[5%]">Inv</th>
+              <th className="px-1 py-2 text-center font-medium w-[5%]">Box</th>
+              <th className="px-1 py-2 text-center font-medium w-[8%]">Received</th>
+              <th className="px-1 py-2 text-center font-medium w-[7%]">Stock OK</th>
+              <th className="px-1 py-2 text-center font-medium w-[47%]">Follow up / Notes</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td className="px-2 py-4 text-xs text-gray-500" colSpan={8}>
+                  No open feedbacks
+                </td>
+              </tr>
+            ) : (
+              rows.map((r) => (
+                <tr key={r.feedback_id} className="border-t align-top">
+                  <td className="px-1 py-2 break-words">
+                    {r.courier_date ? String(r.courier_date).slice(0, 10) : "-"}
+                  </td>
+
+                  <td className="px-1 py-2 font-semibold break-words">
+                    {toTitleCase(r.customer_name)}
+                    <div className="text-[10px] text-gray-500">
+                      {toTitleCase(r.courier_name)} • {toTitleCase(r.rep_name)}
+                    </div>
+                  </td>
+
+                  <td className="px-1 py-2 break-words">
+                    {r.invoice_date ? String(r.invoice_date).slice(0, 10) : "-"}
+                  </td>
+
+                  <td className="px-1 py-2 text-center">{r.invoice_count || 0}</td>
+                  <td className="px-1 py-2 text-center">{r.no_of_box ?? "-"}</td>
+
+                  <td className="px-1 py-2 text-center">
+                    <select
+                      className="h-8 rounded-md border px-1 text-[12px]"
+                      value={r._stock_received}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        updateLocal(r.feedback_id, {
+                          _stock_received: v,
+                          _stocks_ok: v === "0" ? "" : r._stocks_ok,
+                        });
+                      }}
+                    >
+                      <option value="">-</option>
+                      <option value="1">Yes</option>
+                      <option value="0">No</option>
+                    </select>
+                  </td>
+
+                  <td className="px-1 py-2 text-center">
+                    <select
+                      className="h-8 rounded-md border px-1 text-[12px]"
+                      value={r._stocks_ok}
+                      onChange={(e) => updateLocal(r.feedback_id, { _stocks_ok: e.target.value })}
+                      disabled={r._stock_received !== "1"}
+                    >
+                      <option value="">-</option>
+                      <option value="1">Yes</option>
+                      <option value="0">No</option>
+                    </select>
+                  </td>
+
+                  <td className="px-1 py-2 flex align-middle gap-3">
+                    <textarea
+                      className="h-8 w-full resize-none rounded-md border p-1 text-[12px]"
+                      value={r._follow_up}
+                      onChange={(e) => updateLocal(r.feedback_id, { _follow_up: e.target.value })}
+                      placeholder="Type follow up / issue..."
+                    />
+                    <div className=" flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => saveRow(r)}
+                        disabled={r._saving}
+                        className="h-8 rounded-md bg-green-600 px-3 text-xs font-semibold text-white hover:bg-green-700 disabled:opacity-60"
+                      >
+                        {r._saving ? "Saving..." : "Save"}
+                      </button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, i) => (
-                  <tr key={i}>
-                    <td className="border px-2 py-1">
-                      {r.start_time || "-"}
-                    </td>
-                    <td className="border px-2 py-1">
-                      {r.end_time || "-"}
-                    </td>
-                    <td className="border px-2 py-1">
-                      {r.duration_minutes} mins
-                    </td>
-                    <td className="border px-2 py-1">{r.action}</td>
-                    <td className="border px-2 py-1">
-                      {r.customer_name}
-                    </td>
-                    <td className="border px-2 py-1">
-                      {r.status === "IN_PROGRESS"
-                        ? "In Progress"
-                        : "Completed"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="border-t px-4 py-2 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-8 rounded-md border px-3 text-xs hover:bg-gray-50"
-          >
-            Close
-          </button>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 };
 
-export default StaffTimelineModal;
+export default FeedbackPage;

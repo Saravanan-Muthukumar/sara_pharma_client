@@ -1,7 +1,7 @@
 // src/components/packing/StaffTimelineModal.jsx
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
-import { API } from "../../components/packing/packingUtils";
+import { API } from "./packingUtils";
 
 const StaffTimelineModal = ({ open, onClose, username }) => {
   const [rows, setRows] = useState([]);

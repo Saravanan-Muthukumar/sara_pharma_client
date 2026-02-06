@@ -17,6 +17,8 @@ import StaffReportModal from "../../components/packing/StaffReportModal";
 import { BILLING_TABS } from "../../components/packing/packingUtils";
 import { getBillingCounts, getBillingListByTab } from "../../components/packing/billingSelectors";
 import { buildStaffReport } from "../../components/packing/packingUtils";
+import AdminTimelineModal from "../../components/packing/AdminTimelineModal";
+
 
 const AdminPacking = () => {
   const { currentUser } = useContext(AuthContext);
@@ -29,6 +31,7 @@ const AdminPacking = () => {
   const [addInvoiceOpen, setAddInvoiceOpen] = useState(false);
 
   const [reportOpen, setReportOpen] = useState(false);
+  const [timelineOpen, setTimelineOpen] = useState(false);
 
   // today string for modal header (matches /api/invoices/today)
   const selectedDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -91,7 +94,9 @@ const AdminPacking = () => {
               Day End
             </Link>
           </>
+          
         }
+        onOpenTimeline={() => setTimelineOpen(true)}
       />
 
       {error && <div className="mt-3 text-xs text-red-600">{error}</div>}
@@ -135,7 +140,11 @@ const AdminPacking = () => {
         report={report}
         onClose={() => setReportOpen(false)}
       />
-
+      <AdminTimelineModal
+        open={timelineOpen}
+        onClose={() => setTimelineOpen(false)}
+        username={currentUsername}
+      />
     </div>
 
     

@@ -10,6 +10,7 @@ import InvoiceList from "../../components/packing/InvoiceList";
 
 import CustomerModal from "../../components/packing/customers/CustomerModal";
 import AddInvoiceModal from "../../components/packing/invoices/AddInvoiceModal";
+import StaffTimelineModal from "../../components/packing/StaffTimelineModal";
 
 import {
   getMyJob,
@@ -27,6 +28,7 @@ const TAB = {
 const BillingStaffPacking = () => {
   const { currentUser } = useContext(AuthContext);
   const currentUsername = String(currentUser?.username || "").trim();
+  const [timelineOpen, setTimelineOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState(TAB.MY_JOB);
 
@@ -97,6 +99,7 @@ const BillingStaffPacking = () => {
             </button>
           </>
         }
+        onOpenTimeline={() => setTimelineOpen(true)}
       />
 
       {disableStartButtons && (
@@ -164,6 +167,11 @@ const BillingStaffPacking = () => {
         currentUsername={currentUsername}
         rowsToday={rows}
         onSaved={refresh}
+      />
+      <StaffTimelineModal
+        open={timelineOpen}
+        onClose={() => setTimelineOpen(false)}
+        username={currentUsername}
       />
     </div>
   );
