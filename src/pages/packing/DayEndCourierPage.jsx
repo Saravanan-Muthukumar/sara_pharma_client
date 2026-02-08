@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import axios from "axios";
 import { API, toTitleCase } from "../../components/packing/packingUtils";
 import { useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const CourierTable = ({ rows, setRows }) => {
   const saveBoxCount = async (feedback_id, no_of_box) => {
@@ -135,7 +137,68 @@ const [confirmLoading, setConfirmLoading] = useState(false);
     return totals;
   }, [rows]);
 
+  const exportCourierPDF = () => {
+    try {
+      const doc = new jsPDF("p", "pt", "a4");
+      const pageWidth = doc.internal.pageSize.getWidth();
   
+      const title = "Day End — Courier List";
+      const sub = `Based on pack_completed_at = today | Courier Date: ${courierDate}`;
+  
+      doc.setFontSize(14);
+      doc.text(title, 40, 40);
+  
+      doc.setFontSize(10);
+      doc.text(sub, 40, 58);
+  
+      let y = 80;
+  
+      const addCourierSection = (courierLabel, groupsByDate) => {
+        const dates = Object.keys(groupsByDate || {});
+        if (dates.length === 0) return;
+  
+        dates.forEach((dateKey) => {
+          const list = groupsByDate[dateKey] || [];
+          const sectionTotal = list.reduce((s, r) => s + (Number(r.no_of_box) || 0), 0);
+  
+          doc.setFontSize(12);
+          doc.text(`${courierLabel} (${dateKey})`, 40, y);
+  
+          doc.setFontSize(10);
+          doc.text(`Total Box: ${sectionTotal}`, pageWidth - 140, y);
+  
+          y += 10;
+  
+          autoTable(doc, {
+            startY: y + 10,
+            head: [["#", "Customer", "City", "Rep", "Inv", "Box"]],
+            body: list.map((r, idx) => [
+              idx + 1,
+              toTitleCase(r.customer_name || ""),
+              toTitleCase(r.city || ""),
+              toTitleCase(r.rep_name || ""),
+              Number(r.invoice_count) || 0,
+              r.no_of_box ?? "",
+            ]),
+            styles: { fontSize: 9, cellPadding: 4 },
+            headStyles: { fillColor: [245, 245, 245], textColor: 20 },
+            margin: { left: 40, right: 40 },
+          });
+  
+          y = doc.lastAutoTable.finalY + 24;
+        });
+      };
+  
+      addCourierSection("ST", grouped.ST);
+      addCourierSection("Professional", grouped.PROFESSIONAL);
+  
+      const filename = `courier_list_${courierDate}.pdf`;
+      doc.save(filename);
+    } catch (e) {
+      console.error("PDF export failed:", e);
+      alert("Failed to export PDF");
+    }
+  };
 
   const renderCourier = (label, groupsByDate, date) => (
     <div className="rounded-lg border bg-white p-2">
@@ -241,7 +304,15 @@ const [confirmLoading, setConfirmLoading] = useState(false);
     <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
       {renderCourier("ST", grouped.ST)}
       {renderCourier("Professional", grouped.PROFESSIONAL)}
-      <div className="mt-4 flex items-center justify-center">
+      <div className="mt-4 flex items-center justify-center gap-4">
+              <button
+                  type="button"
+                  onClick={exportCourierPDF}
+                  disabled={rows.length === 0}
+                  className="h-9 rounded-md border px-4 text-xs font-semibold hover:bg-gray-50 disabled:opacity-60"
+                >
+                  Export PDF
+              </button>
                 <button
                   type="button"
                   onClick={confirmAllCouriers}
