@@ -140,6 +140,11 @@ const [confirmLoading, setConfirmLoading] = useState(false);
   const exportCourierPDF = () => {
     try {
       const doc = new jsPDF("p", "pt", "a4");
+      doc.setProperties({
+        title: `Sara Pharma Courier Report ${courierDate}`,
+        subject: "Day End Courier Report",
+        author: "Sara Pharma",
+      });
   
       const pageWidth = doc.internal.pageSize.getWidth();
       const margin = 40;
