@@ -140,60 +140,120 @@ const [confirmLoading, setConfirmLoading] = useState(false);
   const exportCourierPDF = () => {
     try {
       const doc = new jsPDF("p", "pt", "a4");
-      const pageWidth = doc.internal.pageSize.getWidth();
   
-      const title = "Day End — Courier List";
-      const sub = `Based on pack_completed_at = today | Courier Date: ${courierDate}`;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 40;
+      const gap = 10;
+      const colWidth = (pageWidth - margin * 2 - gap) / 2;
+  
+      const title = "Day End — Courier Report";
+      const sub = `Courier Date: ${courierDate}`;
   
       doc.setFontSize(14);
-      doc.text(title, 40, 40);
+      doc.text(title, margin, 40);
   
       doc.setFontSize(10);
-      doc.text(sub, 40, 58);
+      doc.text(sub, margin, 58);
   
       let y = 80;
   
-      const addCourierSection = (courierLabel, groupsByDate) => {
-        const dates = Object.keys(groupsByDate || {});
-        if (dates.length === 0) return;
+      // collect all unique dates from both couriers
+      const allDates = Array.from(
+        new Set([
+          ...Object.keys(grouped.ST || {}),
+          ...Object.keys(grouped.PROFESSIONAL || {}),
+        ])
+      ).sort();
   
-        dates.forEach((dateKey) => {
-          const list = groupsByDate[dateKey] || [];
-          const sectionTotal = list.reduce((s, r) => s + (Number(r.no_of_box) || 0), 0);
+      allDates.forEach((dateKey, dateIdx) => {
+        if (dateIdx > 0 && y > 700) {
+          doc.addPage();
+          y = 40;
+        }
   
-          doc.setFontSize(12);
-          doc.text(`${courierLabel} (${dateKey})`, 40, y);
+        const stList = grouped.ST?.[dateKey] || [];
+        const proList = grouped.PROFESSIONAL?.[dateKey] || [];
   
-          doc.setFontSize(10);
-          doc.text(`Total Box: ${sectionTotal}`, pageWidth - 140, y);
+        // ----- HEADERS -----
+        doc.setFontSize(11);
+        doc.text(`ST (${dateKey})`, margin, y);
+        doc.text(`Professional (${dateKey})`, margin + colWidth + gap, y);
   
-          y += 10;
+        const stTotal = stList.reduce((s, r) => s + (Number(r.no_of_box) || 0), 0);
+        const proTotal = proList.reduce((s, r) => s + (Number(r.no_of_box) || 0), 0);
   
-          autoTable(doc, {
-            startY: y + 10,
-            head: [["#", "Customer", "City", "Rep", "Inv", "Box"]],
-            body: list.map((r, idx) => [
-              idx + 1,
-              toTitleCase(r.customer_name || ""),
-              toTitleCase(r.city || ""),
-              toTitleCase(r.rep_name || ""),
-              Number(r.invoice_count) || 0,
-              r.no_of_box ?? "",
-            ]),
-            styles: { fontSize: 9, cellPadding: 4 },
-            headStyles: { fillColor: [245, 245, 245], textColor: 20 },
-            margin: { left: 40, right: 40 },
-          });
+        doc.setFontSize(9);
+        doc.text(`Total Box: ${stTotal}`, margin, y + 14);
+        doc.text(`Total Box: ${proTotal}`, margin + colWidth + gap, y + 14);
   
-          y = doc.lastAutoTable.finalY + 24;
+        y += 26;
+  
+        // ----- ST TABLE (LEFT) -----
+        autoTable(doc, {
+          startY: y,
+          tableWidth: colWidth,
+          margin: { left: margin },
+          head: [["#", "Customer", "City", "Inv", "Box"]],
+          body: stList.map((r, i) => [
+            i + 1,
+            toTitleCase(r.customer_name || ""),
+            toTitleCase(r.city || ""),
+            Number(r.invoice_count) || 0,
+            r.no_of_box ?? "",
+          ]),
+          styles: { fontSize: 8, cellPadding: 3 },
+          headStyles: { fillColor: [240, 240, 240], textColor: 20 },
         });
-      };
   
-      addCourierSection("ST", grouped.ST);
-      addCourierSection("Professional", grouped.PROFESSIONAL);
+        const stEndY = doc.lastAutoTable?.finalY || y;
   
-      const filename = `courier_list_${courierDate}.pdf`;
-      doc.save(filename);
+        // ----- PROFESSIONAL TABLE (RIGHT) -----
+        autoTable(doc, {
+          startY: y,
+          tableWidth: colWidth,
+          margin: { left: margin + colWidth + gap },
+          head: [["#", "Customer", "City", "Inv", "Box"]],
+          body: proList.map((r, i) => [
+            i + 1,
+            toTitleCase(r.customer_name || ""),
+            toTitleCase(r.city || ""),
+            Number(r.invoice_count) || 0,
+            r.no_of_box ?? "",
+          ]),
+          styles: { fontSize: 8, cellPadding: 3 },
+          headStyles: { fillColor: [240, 240, 240], textColor: 20 },
+        });
+  
+        const proEndY = doc.lastAutoTable?.finalY || y;
+  
+        // move Y to the taller table
+        y = Math.max(stEndY, proEndY) + 30;
+      });
+  
+      // -------- SAVE / OPEN (mobile-safe) --------
+      const filename = `Courier Report ${courierDate}.pdf`;
+      const ua = navigator.userAgent || "";
+      const isIOS =
+        /iPad|iPhone|iPod/.test(ua) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  
+      const blob = doc.output("blob");
+      const blobUrl = URL.createObjectURL(blob);
+  
+      if (isIOS) {
+        const w = window.open(blobUrl, "_blank");
+        if (!w) window.location.href = blobUrl;
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 15000);
+        return;
+      }
+  
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
     } catch (e) {
       console.error("PDF export failed:", e);
       alert("Failed to export PDF");
