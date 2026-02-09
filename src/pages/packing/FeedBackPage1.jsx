@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { API, toTitleCase } from "../../components/packing/packingUtils";
 
-const FeedbackPage = () => {
+const FeedbackPage1 = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -248,4 +248,4 @@ const FeedbackPage = () => {
   );
 };
 
-export default FeedbackPage;
+export default FeedbackPage1;

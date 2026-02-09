@@ -137,7 +137,7 @@ const Navbar = () => {
                     PACKING
                   </NavLink>
                   <NavLink to="/feedback" onClick={closeMenu}>
-                    PACKING
+                    FEEDBACK
                   </NavLink>
 
                   <div className="mt-2 flex items-center justify-between px-3">
