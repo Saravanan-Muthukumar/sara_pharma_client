@@ -120,7 +120,7 @@ const MarkPackedBoxModal = ({
               <div className="rounded-md border bg-gray-50 p-3">
                 <div className="text-xs text-gray-500">Confirm before updating</div>
                 <div className="mt-2 text-sm">
-                  No. of box: <span className="font-semibold">{no_of_box}</span>
+                  No. of box / cover: <span className="font-semibold">{no_of_box}</span>
                 </div>
                 {weight !== "" && (
                   <div className="mt-1 text-sm">
