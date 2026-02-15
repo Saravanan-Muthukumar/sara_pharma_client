@@ -1,10 +1,9 @@
 // src/components/packing/customers/CustomerModal.jsx
 import { useEffect, useMemo, useState } from "react";
-import { toTitleCase } from "../packingUtils";
-import { useCustomers } from "../../../hooks/packing/useCustomers";
-import { useUsers } from "../../../hooks/packing/useUsers";
-import CourierSelect from "../common/CourierSelect";
-import RepSelect from "../common/RepSelect";
+import { toTitleCase } from "./packingUtils";
+import { useCustomers } from "../../hooks/useCustomers";
+import { useUsers } from "../../hooks/useUsers";
+import RepSelect from "./RepSelect";
 
 const CustomerModal = ({ open, onClose, onRefresh }) => {
   const { loading, customers, error, load, save, remove } = useCustomers();
@@ -15,7 +14,6 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const { users } = useUsers({ open });
-
 
   const [values, setValues] = useState({
     customer_name: "",
@@ -218,10 +216,20 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
                     roleFilter="billing"   // or null if you want all
                 />
                {/* ✅ Courier dropdown (Local/ST/blank) */}
-                <CourierSelect
+                {/* <CourierSelect
                     value={values.courier_name}
                     onChange={(v) => setValues((p) => ({ ...p, courier_name: v }))}
-                />
+                /> */}
+                <select
+                    value={values.courier_name}
+                    onChange={(e) => e.target.value}
+                    className="h-10 rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                  >
+                    <option value="ST">ST</option>
+                    <option value="Professional">Professional</option>
+                    <option value="Local">Local</option>
+                    
+                  </select>
               </div>
 
               <div className="mt-3 flex gap-2">

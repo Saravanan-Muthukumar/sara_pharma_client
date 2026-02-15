@@ -1,7 +1,7 @@
 // src/hooks/packing/useCustomers.js
 import { useCallback, useState } from "react";
 import axios from "axios";
-import { API } from "../../components/packing/packingUtils";
+import { API } from "../components/packing/packingUtils";
 
 export const useCustomers = () => {
   const [loading, setLoading] = useState(false);

@@ -153,7 +153,6 @@ const Navbar = () => {
                   </div>
                 </>
               )}
-
               {!currentUser && (
                 <div className="mt-2 px-3">
                   <Link

@@ -1,8 +1,8 @@
 // src/pages/packing/DayEndPage.jsx
 import { useCallback, useMemo, useState } from "react";
-import { useInvoicesToday } from "../../hooks/packing/useInvoicesToday";
-import AddInvoiceModal from "../../components/packing/invoices/AddInvoiceModal";
-import { findMissingInvoices } from "../../components/packing/dayend/dayEndUtils";
+import { useInvoicesToday } from "../../hooks/useInvoicesToday";
+import AddInvoiceModal from "../../components/packing/AddInvoiceModal";
+import { findMissingInvoices } from "../../components/packing/dayEndUtils";
 import DayEndCourierPage from "./DayEndCourierPage";
 import { Link } from "react-router-dom";
 

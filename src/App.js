@@ -5,11 +5,8 @@ import { useContext } from "react";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import DayEndPage from "./pages/packing/DayEndPage"; // ✅ ADD
-import AddCollection from "./pages/AddCollection";
-import AddPurchaseIssue from "./pages/AddPurchaseIssue";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import PurchaseIssues from "./pages/PurchaseIssues";
 import Register from "./pages/Register";
 import Stationary from "./pages/Stationary";
 import AddEditStationary from "./pages/AddEditStationary";
@@ -69,17 +66,8 @@ const router = createBrowserRouter([
       { path: "/addstationary", element: <AddEditStationary /> },
       { path: "/editstationary/:id", element: <AddEditStationary /> },
 
-      { path: "/issues", element: <PurchaseIssues /> },
-      { path: "/addpurchaseissue", element: <RequireAuth><AddPurchaseIssue /></RequireAuth> },
-      { path: "/addpurchaseissue/:id", element: <RequireAuth><AddPurchaseIssue /></RequireAuth> },
-      { path: "/addcollection", element: <RequireAuth><AddCollection /></RequireAuth> },
-
-      // ✅ OLD URL redirect
-      { path: "/package", element: <Navigate to="/packing" replace /> },
-
       // ✅ packing routes
-      { path: "/packing", element: <PackingGate /> },
-      
+      { path: "/packing", element: <PackingGate /> },   
       { path: "/feedback", element: <FeedBackPage /> },
       { path: "/packing/staff", element: <RequireAuth><Packingstaff /></RequireAuth> },
       { path: "/packing/billing", element: <RequireAuth><BillingStaffPacking /></RequireAuth> },

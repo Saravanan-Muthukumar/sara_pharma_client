@@ -1,7 +1,7 @@
 // src/hooks/packing/useUsers.js
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import { API } from "../../components/packing/packingUtils";
+import { API } from "../components/packing/packingUtils";
 
 export const useUsers = ({ open = true } = {}) => {
   const [loading, setLoading] = useState(false);

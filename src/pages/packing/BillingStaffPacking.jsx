@@ -1,15 +1,15 @@
 import { useContext, useMemo, useState } from "react";
 import { AuthContext } from "../../context/authContext";
 
-import { useInvoicesToday } from "../../hooks/packing/useInvoicesToday";
-import { usePackingActions } from "../../hooks/packing/usePackingActions";
+import { useInvoicesToday } from "../../hooks/useInvoicesToday";
+import { usePackingActions } from "../../hooks/usePackingActions";
 
 import PackingTopBar from "../../components/packing/PackingTopBar";
 import SimpleTabs from "../../components/packing/SimpleTabs";
 import InvoiceList from "../../components/packing/InvoiceList";
 
-import CustomerModal from "../../components/packing/customers/CustomerModal";
-import AddInvoiceModal from "../../components/packing/invoices/AddInvoiceModal";
+import CustomerModal from "../../components/packing/CustomerModal";
+import AddInvoiceModal from "../../components/packing/AddInvoiceModal";
 import StaffTimelineModal from "../../components/packing/StaffTimelineModal";
 
 import {

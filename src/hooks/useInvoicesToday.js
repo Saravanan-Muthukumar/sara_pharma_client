@@ -1,7 +1,7 @@
 // src/hooks/packing/useInvoicesToday.js
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import { API } from "../../components/packing/packingUtils";
+import { API } from "../components/packing/packingUtils";
 
 export const useInvoicesToday = () => {
   const [rows, setRows] = useState([]);

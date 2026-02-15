@@ -2,8 +2,8 @@
 import { useContext, useMemo, useState } from "react";
 import { AuthContext } from "../../context/authContext";
 
-import { useInvoicesToday } from "../../hooks/packing/useInvoicesToday";
-import { usePackingActions } from "../../hooks/packing/usePackingActions";
+import { useInvoicesToday } from "../../hooks/useInvoicesToday";
+import { usePackingActions } from "../../hooks/usePackingActions";
 
 import PackingTopBar from "../../components/packing/PackingTopBar";
 import SimpleTabs from "../../components/packing/SimpleTabs";

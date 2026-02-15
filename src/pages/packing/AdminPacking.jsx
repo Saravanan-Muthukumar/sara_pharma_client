@@ -3,14 +3,14 @@ import { Link } from "react-router-dom";
 import { useContext, useMemo, useState } from "react";
 import { AuthContext } from "../../context/authContext";
 
-import { useInvoicesToday } from "../../hooks/packing/useInvoicesToday";
+import { useInvoicesToday } from "../../hooks/useInvoicesToday";
 
 import PackingTopBar from "../../components/packing/PackingTopBar";
 import SimpleTabs from "../../components/packing/SimpleTabs";
 import InvoiceList from "../../components/packing/InvoiceList";
 
-import CustomerModal from "../../components/packing/customers/CustomerModal";
-import AddInvoiceModal from "../../components/packing/invoices/AddInvoiceModal";
+import CustomerModal from "../../components/packing/CustomerModal";
+import AddInvoiceModal from "../../components/packing/AddInvoiceModal";
 
 import StaffReportModal from "../../components/packing/StaffReportModal";
 

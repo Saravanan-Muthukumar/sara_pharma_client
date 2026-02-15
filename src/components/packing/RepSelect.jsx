@@ -1,6 +1,6 @@
 // src/components/packing/common/RepSelect.jsx
 import { useMemo } from "react";
-import { toTitleCase } from "../packingUtils";
+import { toTitleCase } from "./packingUtils";
 
 const RepSelect = ({ users = [], value, onChange, allowBlank = true, roleFilter = "billing" }) => {
   const reps = useMemo(() => {

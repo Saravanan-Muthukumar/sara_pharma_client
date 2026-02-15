@@ -89,15 +89,24 @@ export const actionBtnClass = (type) => {
 };
 
 export const formatInvoiceNumberSA0 = (input) => {
-    const raw = String(input ?? "").trim();
-    if (!raw) return "";
-  
-    // If user typed full like SA000123 keep digits only portion
-    const digits = raw.replace(/\D/g, "").slice(0, 5); // max 5 digits
-    const padded = digits.padStart(5, "0");
-  
-    return `SA0${padded}`; // length always 8 when digits present
-  };
+  const raw = String(input ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+  // Allow step-by-step typing
+  if (raw === "" || raw === "S" || raw === "SA" || raw === "SA0") {
+    return raw;
+  }
+
+  // Extract digits
+  const digits = raw.replace(/\D/g, "").slice(0, 5);
+
+  // If no digits yet, don't pad
+  if (!digits) return "SA0";
+
+  // Pad ONLY when digits exist
+  const padded = digits.padStart(5, "0");
+
+  return `SA0${padded}`;
+};
   
   // validation for save
   export const isValidInvoiceNumberSA0 = (value) => {

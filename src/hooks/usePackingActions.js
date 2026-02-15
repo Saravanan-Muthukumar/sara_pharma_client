@@ -1,7 +1,7 @@
 // src/hooks/packing/usePackingActions.js
 import { useCallback } from "react";
 import axios from "axios";
-import { API } from "../../components/packing/packingUtils";
+import { API } from "../components/packing/packingUtils";
 
 export const usePackingActions = ({ currentUsername, refresh }) => {
   const post = useCallback(
