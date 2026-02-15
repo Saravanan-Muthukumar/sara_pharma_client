@@ -155,6 +155,7 @@ const BillingStaffPacking = () => {
             return disableStartButtons || takenByMe;
           }}
           emptyText="No bills"
+          onRefresh={refresh}
         />
       </div>
 

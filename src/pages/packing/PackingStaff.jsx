@@ -107,6 +107,7 @@ const PackingStaff = () => {
             const takenByMe = String(it.taken_by || "").trim() === currentUsername;
             return disableStartButtons || takenByMe;
           }}
+          onRefresh={refresh}
         />
       </div>
       <StaffTimelineModal

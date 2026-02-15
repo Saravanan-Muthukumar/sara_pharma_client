@@ -1,5 +1,6 @@
 // src/components/packing/InvoiceList.jsx
 import { useEffect, useMemo, useState } from "react";
+import MarkPackedBoxModal from "./MarkPackedBoxModal";
 import {
   STATUS_TEXT,
   actionBtnClass,
@@ -34,10 +35,11 @@ const RunningDurationHMS = ({ startTs }) => {
 ========================= */
 const InvoiceCard = ({
   invoice_row,
-  mode, // "MY_JOB" | "TO_TAKE" | "TO_VERIFY" | "ALL"
+  mode,
   currentUsername,
   actions,
   disableActions,
+  onOpenMarkPackedModal, // ✅ NEW
 }) => {
   const status = String(invoice_row.status || "").trim();
 
@@ -130,11 +132,12 @@ const InvoiceCard = ({
       );
     }
 
+    // ✅ Mark Packed opens modal (NOT direct API call)
     if (mode === "MY_JOB" && status === "VERIFYING") {
       actionBtn = (
         <button
           type="button"
-          onClick={() => actions?.markPacked?.(invoice_row.invoice_id)}
+          onClick={() => onOpenMarkPackedModal(invoice_row.invoice_id)}
           className={actionBtnClass("PACKED")}
         >
           Mark Packed
@@ -210,38 +213,59 @@ const InvoiceCard = ({
 ========================= */
 const InvoiceList = ({
   list = [],
-  mode, // "MY_JOB" | "TO_TAKE" | "TO_VERIFY" | "ALL"
+  mode,
   loading,
   emptyText = "No bills",
   currentUsername,
   disableActions = false,
-  disableVerifyStartForRow, // fn(invoice)->bool
+  disableVerifyStartForRow,
   actions,
+  onRefresh, // ✅ NEW (pass refresh from parent)
 }) => {
+  const [openPackedModal, setOpenPackedModal] = useState(false);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
+
+  const open_mark_packed_modal = (invoice_id) => {
+    setSelectedInvoiceId(invoice_id);
+    setOpenPackedModal(true);
+  };
+
   if (!loading && (!list || list.length === 0)) {
     return <div className="rounded-md border bg-white p-3 text-xs text-gray-500">{emptyText}</div>;
   }
 
   return (
-    <div className="space-y-3">
-      {(list || []).map((invoice_row) => {
-        const rowDisable =
-          typeof disableVerifyStartForRow === "function"
-            ? disableVerifyStartForRow(invoice_row) || disableActions
-            : disableActions;
+    <>
+      <div className="space-y-3">
+        {(list || []).map((invoice_row) => {
+          const rowDisable =
+            typeof disableVerifyStartForRow === "function"
+              ? disableVerifyStartForRow(invoice_row) || disableActions
+              : disableActions;
 
-        return (
-          <InvoiceCard
-            key={invoice_row.invoice_id}
-            invoice_row={invoice_row}
-            mode={mode}
-            currentUsername={currentUsername}
-            actions={actions}
-            disableActions={rowDisable}
-          />
-        );
-      })}
-    </div>
+          return (
+            <InvoiceCard
+              key={invoice_row.invoice_id}
+              invoice_row={invoice_row}
+              mode={mode}
+              currentUsername={currentUsername}
+              actions={actions}
+              disableActions={rowDisable}
+              onOpenMarkPackedModal={open_mark_packed_modal} // ✅
+            />
+          );
+        })}
+      </div>
+
+      {/* ✅ Modal only once */}
+      <MarkPackedBoxModal
+        open={openPackedModal}
+        onClose={() => setOpenPackedModal(false)}
+        invoice_id={selectedInvoiceId}
+        username={currentUsername}
+        onSaved={onRefresh}
+      />
+    </>
   );
 };
 
