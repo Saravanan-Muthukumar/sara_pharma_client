@@ -172,7 +172,7 @@ const MarkPackedBoxModal = ({
 
               {/* No of Box (+ / -) */}
               <div>
-                <div className="text-xs text-gray-500 mb-1">No. of box</div>
+                <div className="text-xs text-gray-500 mb-1">No. of box / cover</div>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
