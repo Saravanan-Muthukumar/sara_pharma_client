@@ -51,7 +51,7 @@ const Home = () => {
       <div className="md:hidden px-4 py-16">
         <div className="grid grid-cols-1 gap-8">
           <Link
-            to="/package"
+            to="/packing"
             className="
               group
               rounded-2xl
@@ -73,7 +73,7 @@ const Home = () => {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-base font-semibold text-gray-900">
-                    Packaging
+                    Packing
                   </p>
                   <span className="text-gray-400 transition group-active:translate-x-0.5">
                     ›
