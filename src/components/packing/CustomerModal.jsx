@@ -221,15 +221,15 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
                     onChange={(v) => setValues((p) => ({ ...p, courier_name: v }))}
                 /> */}
                 <select
-                    value={values.courier_name}
-                    onChange={(e) => e.target.value}
-                    className="h-10 rounded-md border px-3 text-sm outline-none focus:border-teal-600"
-                  >
-                    <option value="ST">ST</option>
-                    <option value="Professional">Professional</option>
-                    <option value="Local">Local</option>
-                    
-                  </select>
+                  value={values.courier_name}
+                  onChange={(e) => setValues((p) => ({ ...p, courier_name: e.target.value }))}
+                  className="h-10 rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                >
+                  <option value="">Select courier</option>
+                  <option value="ST">ST</option>
+                  <option value="Professional">Professional</option>
+                  <option value="Local">Local</option>
+                </select>
               </div>
 
               <div className="mt-3 flex gap-2">
