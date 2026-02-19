@@ -41,6 +41,7 @@ const CourierTable = ({ rows, setRows }) => {
           pack_completed_at: r.pack_completed_at,
           invoice_count: 0,
           no_of_box: r.no_of_box ?? null,
+          weight: r.weight ?? 0,
         };
       }
 
@@ -147,7 +148,7 @@ const [confirmLoading, setConfirmLoading] = useState(false);
       });
   
       const pageWidth = doc.internal.pageSize.getWidth();
-      const margin = 40;
+      const margin = 30;
       const gap = 10;
       const colWidth = (pageWidth - margin * 2 - gap) / 2;
   
@@ -198,13 +199,14 @@ const [confirmLoading, setConfirmLoading] = useState(false);
           startY: y,
           tableWidth: colWidth,
           margin: { left: margin },
-          head: [["#", "Customer", "City", "Inv", "Box"]],
+          head: [["#", "Customer", "City", "Inv", "Box", "Wt"]],
           body: stList.map((r, i) => [
             i + 1,
             toTitleCase(r.customer_name || ""),
             toTitleCase(r.city || ""),
             Number(r.invoice_count) || 0,
             r.no_of_box ?? "",
+            r.weight ?? "",
           ]),
           styles: { fontSize: 8, cellPadding: 3 },
           headStyles: { fillColor: [240, 240, 240], textColor: 20 },
@@ -217,13 +219,14 @@ const [confirmLoading, setConfirmLoading] = useState(false);
           startY: y,
           tableWidth: colWidth,
           margin: { left: margin + colWidth + gap },
-          head: [["#", "Customer", "City", "Inv", "Box"]],
+          head: [["#", "Customer", "City", "Inv", "Box", "Wt"]],
           body: proList.map((r, i) => [
             i + 1,
             toTitleCase(r.customer_name || ""),
             toTitleCase(r.city || ""),
             Number(r.invoice_count) || 0,
             r.no_of_box ?? "",
+            r.weight ?? "",
           ]),
           styles: { fontSize: 8, cellPadding: 3 },
           headStyles: { fillColor: [240, 240, 240], textColor: 20 },
@@ -307,6 +310,9 @@ const [confirmLoading, setConfirmLoading] = useState(false);
                     <th className="px-1 py-1 text-center font-medium w-[10%] sm:w-[10%]">
                       Inv
                     </th>
+                    <th className="hidden sm:table-cell px-1 py-1 text-left font-medium w-[16%]">
+                      Weight
+                    </th>
                     <th className="px-1 py-1 text-left font-medium w-[18%] sm:w-[16%]">
                       Box
                     </th>
@@ -334,6 +340,10 @@ const [confirmLoading, setConfirmLoading] = useState(false);
 
                       <td className="px-1 py-1 text-center w-[10%] sm:w-[10%]">
                         {r.invoice_count || 0}
+                      </td>
+
+                      <td className="hidden sm:table-cell px-1 py-1 text-center w-[10%] sm:w-[10%]">
+                        {r.weight || 0}
                       </td>
 
                       <td className="px-1 py-1 w-[18%] sm:w-[16%] min-w-0">
@@ -405,6 +415,7 @@ const DayEndCourierPage = ({ onBack }) => {
     try {
       const res = await axios.post(`${API}/api/feedbacklist`, {});
       const data = res.data;
+      console.log(res.data)
 
       if (Array.isArray(data)) {
         setRows(data);
