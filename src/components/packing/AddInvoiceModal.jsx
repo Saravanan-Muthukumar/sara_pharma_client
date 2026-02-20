@@ -1,5 +1,5 @@
 // src/components/packing/invoices/AddInvoiceModalBasic.jsx
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState, useRef } from "react";
 import axios from "axios";
 import { API } from "./packingUtils";
 import { AuthContext } from "../../context/authContext";
@@ -31,6 +31,7 @@ const AddInvoiceModal = ({
   const [customerId, setCustomerId] = useState(null);
   const [courierName, setCourierName] = useState("");
   const [salesRep, setSalesRep] = useState("");
+  const customerRef = useRef(null);
 
   // typeahead state
   const [customers, setCustomers] = useState([]);
@@ -40,6 +41,17 @@ const AddInvoiceModal = ({
   const [saving, setSaving] = useState(false);
   const [checking, setChecking] = useState(false);
   const [sameCustomerInvoices, setSameCustomerInvoices] = useState([]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => {
+      if (customerRef.current && !customerRef.current.contains(e.target)) {
+        setShowCustomerDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
 
   // reset when opening
   useEffect(() => {
@@ -111,7 +123,7 @@ const AddInvoiceModal = ({
       try {
         const res = await axios.get(`${API}/api/customers`, { params: { q } });
         setCustomers(Array.isArray(res.data) ? res.data : []);
-        setShowCustomerDropdown(true);
+        
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error(e);
@@ -214,17 +226,9 @@ const AddInvoiceModal = ({
                   onChange={(e) => setInvoiceNumber(e.target.value)}
                   className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
                 />
-    
-                <input
-                  placeholder="No. of Products *"
-                  value={noOfProducts}
-                  onChange={(e) => setNoOfProducts(e.target.value)}
-                  inputMode="numeric"
-                  className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
-                />
-    
+
                 {/* Customer typeahead */}
-                <div className="relative">
+                <div className="relative" ref={customerRef}>
                   <input
                     placeholder="Customer Name *"
                     value={customerName}
@@ -232,7 +236,7 @@ const AddInvoiceModal = ({
                     onFocus={() => {
                       if (customerName.trim().length >= 2) setShowCustomerDropdown(true);
                     }}
-                    onBlur={() => setTimeout(() => setShowCustomerDropdown(false), 150)}
+                    
                     className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
                   />
     
@@ -251,8 +255,7 @@ const AddInvoiceModal = ({
                           <button
                             key={c.customer_id}
                             type="button"
-                            onMouseDown={(e) => e.preventDefault()}
-                            onClick={() => onPickCustomer(c)}
+                            onMouseDown={(e) => {e.preventDefault(); onPickCustomer(c)}}
                             className="block w-full px-3 py-2 text-left hover:bg-gray-50"
                           >
                             <div className="text-sm font-medium text-gray-900">{c.customer_name}</div>
@@ -273,6 +276,21 @@ const AddInvoiceModal = ({
                   // onChange={(e) => setCourierName(e.target.value)}
                   className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
                 />
+
+                <input
+                  placeholder="Sales Rep (auto)"
+                  value={salesRep}
+                  // onChange={(e) => setSalesRep(e.target.value)}
+                  className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                />
+
+                <input
+                    placeholder="No. of Products *"
+                    value={noOfProducts}
+                    onChange={(e) => setNoOfProducts(e.target.value)}
+                    inputMode="numeric"
+                    className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                  />
     
                 <input
                   placeholder="Invoice Value (optional)"
@@ -282,12 +300,7 @@ const AddInvoiceModal = ({
                   className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
                 />
     
-                <input
-                  placeholder="Sales Rep (auto)"
-                  value={salesRep}
-                  // onChange={(e) => setSalesRep(e.target.value)}
-                  className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
-                />
+
               </div>
     
               <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">

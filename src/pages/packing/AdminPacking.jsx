@@ -2,40 +2,33 @@
 import { Link } from "react-router-dom";
 import { useContext, useMemo, useState } from "react";
 import { AuthContext } from "../../context/authContext";
-
 import { useInvoicesToday } from "../../hooks/useInvoicesToday";
-
 import PackingTopBar from "../../components/packing/PackingTopBar";
 import SimpleTabs from "../../components/packing/SimpleTabs";
 import InvoiceList from "../../components/packing/InvoiceList";
-
 import CustomerModal from "../../components/packing/CustomerModal";
 import AddInvoiceModal from "../../components/packing/AddInvoiceModal";
-
 import StaffReportModal from "../../components/packing/StaffReportModal";
-
 import { BILLING_TABS } from "../../components/packing/packingUtils";
 import { getBillingCounts, getBillingListByTab } from "../../components/packing/billingSelectors";
 import { buildStaffReport } from "../../components/packing/packingUtils";
 import AdminTimelineModal from "../../components/packing/AdminTimelineModal";
+import EditInvoiceModal from "../../components/packing/EditnvoiceModal";
 
 
 const AdminPacking = () => {
   const { currentUser } = useContext(AuthContext);
   const currentUsername = String(currentUser?.username || "").trim();
   const isAdmin = String(currentUser?.role || "").toLowerCase() === "admin";
-
   const [activeTab, setActiveTab] = useState("OUTSTANDING");
-
   const [customerOpen, setCustomerOpen] = useState(false);
   const [addInvoiceOpen, setAddInvoiceOpen] = useState(false);
-
   const [reportOpen, setReportOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
+  const [editInvoiceOpen, setEditInvoiceOpen] = useState(false);
 
   // today string for modal header (matches /api/invoices/today)
   const selectedDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
-
   const { rows, loading, error, refresh } = useInvoicesToday();
 
   const tabs = useMemo(
@@ -103,6 +96,13 @@ const AdminPacking = () => {
             >
               Add Bills
             </button>
+            <button
+              type="button"
+              onClick={() => setEditInvoiceOpen(true)}
+              className="h-8 rounded-md bg-teal-600 px-3 text-xs font-semibold text-white hover:bg-teal-700"
+            >
+              Edit Bill
+            </button>
             <Link
               to="/packing/dayend"
               className="inline-flex h-8 items-center rounded-md bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700"
@@ -160,6 +160,11 @@ const AdminPacking = () => {
         open={timelineOpen}
         onClose={() => setTimelineOpen(false)}
         username={currentUsername}
+      />
+      <EditInvoiceModal
+        open={editInvoiceOpen}
+        onClose={() => setEditInvoiceOpen(false)}
+        onSaved={refresh}
       />
     </div>
 
