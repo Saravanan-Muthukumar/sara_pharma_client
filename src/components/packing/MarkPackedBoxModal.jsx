@@ -98,7 +98,7 @@ const MarkPackedBoxModal = ({ open, onClose, invoice_id, username, onSaved }) =>
                 </div>
                 {info.weight !== "" && (
                   <div className="mt-1 text-sm">
-                    Weight: <span className="font-semibold">{info.weight}</span>
+                    Weight: <span className="font-semibold">{info.weight}</span> Kg
                   </div>
                 )}
               </div>
@@ -159,7 +159,11 @@ const MarkPackedBoxModal = ({ open, onClose, invoice_id, username, onSaved }) =>
 
               {!isLocal && (
                 <input
-                  placeholder="Weight (optional)"
+                  type="number"
+                  min="0"
+                  step="1"
+                  required
+                  placeholder="Weight in Kg"
                   value={info.weight}
                   onChange={(e) => setInfo((p) => ({ ...p, weight: e.target.value }))}
                   className="h-9 w-full rounded-md border px-3 text-sm outline-none"
@@ -169,7 +173,10 @@ const MarkPackedBoxModal = ({ open, onClose, invoice_id, username, onSaved }) =>
               <div className="flex gap-2 pt-1">
                 <button
                   type="button"
-                  onClick={() => setConfirm(true)}
+                  onClick={() => { if (!info.weight || Number(info.weight) <= 0) {
+                                alert("Please enter weight in Kg");
+                                return;}
+                                setConfirm(true)}}
                   disabled={saving}
                   className="h-9 flex-1 rounded-md bg-teal-600 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
                 >

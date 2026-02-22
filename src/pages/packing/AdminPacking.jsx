@@ -14,6 +14,7 @@ import { getBillingCounts, getBillingListByTab } from "../../components/packing/
 import { buildStaffReport } from "../../components/packing/packingUtils";
 import AdminTimelineModal from "../../components/packing/AdminTimelineModal";
 import EditInvoiceModal from "../../components/packing/EditnvoiceModal";
+import AuditTrailModal from "../../components/packing/AuditTrailModal";
 
 
 const AdminPacking = () => {
@@ -26,6 +27,7 @@ const AdminPacking = () => {
   const [reportOpen, setReportOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [editInvoiceOpen, setEditInvoiceOpen] = useState(false);
+  const [auditTrialOpen, setAuditTrialOpen] = useState(false);
 
   // today string for modal header (matches /api/invoices/today)
   const selectedDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -103,6 +105,13 @@ const AdminPacking = () => {
             >
               Edit Bill
             </button>
+            <button
+              type="button"
+              onClick={() => setAuditTrialOpen(true)}
+              className="h-8 rounded-md bg-teal-600 px-3 text-xs font-semibold text-white hover:bg-teal-700"
+            >
+              Audit Bill
+            </button>
             <Link
               to="/packing/dayend"
               className="inline-flex h-8 items-center rounded-md bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700"
@@ -164,6 +173,11 @@ const AdminPacking = () => {
       <EditInvoiceModal
         open={editInvoiceOpen}
         onClose={() => setEditInvoiceOpen(false)}
+        onSaved={refresh}
+      />
+      <AuditTrailModal
+        open={auditTrialOpen}
+        onClose={() => setAuditTrialOpen(false)}
         onSaved={refresh}
       />
     </div>
