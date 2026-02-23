@@ -171,17 +171,22 @@ const MarkPackedBoxModal = ({ open, onClose, invoice_id, username, onSaved }) =>
               )}
 
               <div className="flex gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => { if (!info.weight || Number(info.weight) <= 0) {
-                                alert("Please enter weight in Kg");
-                                return;}
-                                setConfirm(true)}}
-                  disabled={saving}
-                  className="h-9 flex-1 rounded-md bg-teal-600 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
-                >
-                  Confirm
-                </button>
+              <button
+                    type="button"
+                    onClick={() => {
+                      if (!isLocal) {
+                        if (!info.weight || Number(info.weight) <= 0) {
+                          alert("Please enter weight in Kg");
+                          return;
+                        }
+                      }
+                      setConfirm(true);
+                    }}
+                    disabled={saving}
+                    className="h-9 flex-1 rounded-md bg-teal-600 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
+                  >
+                    Confirm
+                  </button>
                 <button type="button" onClick={onClose} disabled={saving}
                   className="h-9 flex-1 rounded-md border text-sm hover:bg-gray-50 disabled:opacity-60"
                 >
