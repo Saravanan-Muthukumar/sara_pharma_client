@@ -14,6 +14,7 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const { users } = useUsers({ open });
+  const [errors, setErrors] = useState({});
 
   const [values, setValues] = useState({
     customer_name: "",
@@ -23,21 +24,26 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
   });
 
   useEffect(() => {
+    setErrors({})
     if (!open) return;
     load("");
     setQ("");
     setFormOpen(false);
     setEditing(null);
     setValues({ customer_name: "", city: "", rep_name: "", courier_name: "" });
+    
   }, [open, load]);
 
   const openAdd = () => {
+    setErrors({})
     setEditing(null);
     setValues({ customer_name: "", city: "", rep_name: "", courier_name: "" });
     setFormOpen(true);
+    
   };
 
   const openEdit = (c) => {
+    setErrors({});
     setEditing(c);
     setValues({
       customer_name: String(c.customer_name || ""),
@@ -49,20 +55,29 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
   };
 
   const closeForm = () => {
+    setErrors({});
     if (saving) return;
     setFormOpen(false);
     setEditing(null);
   };
 
+  const validate = () =>{
+    const next = {};
+    if (!String(values.customer_name || "").trim()) next.customer_name="Customer name required";
+    if (!String(values.city || "").trim()) next.city="City name is required";
+    if (!String(values.rep_name || "").trim()) next.rep_name="Select Rep";
+    if (!String(values.courier_name || "").trim()) next.courier_name="Select courier"
+
+    setErrors(next)
+    return Object.keys(next).length===0;
+  }
+
+
   const onSave = async () => {
     const customer_name = toTitleCase(values.customer_name);
     const city = toTitleCase(values.city);
   
-    if (!customer_name.trim()) {
-      alert("Customer name is required");
-      return;
-    }
-  
+    if (!validate()) return;
     setSaving(true);
     try {
       await save({
@@ -195,47 +210,75 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
                 </button>
               </div>
 
-              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-4">
-                <input
-                  value={values.customer_name}
-                  onChange={(e) => setValues((p) => ({ ...p, customer_name: e.target.value }))}
-                  placeholder="Customer name *"
-                  className="h-10 rounded-md border px-3 text-sm"
-                />
-                <input
-                  value={values.city}
-                  onChange={(e) => setValues((p) => ({ ...p, city: e.target.value }))}
-                  placeholder="City"
-                  className="h-10 rounded-md border px-3 text-sm"
-                />
+              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] items-start">
+                <div className="w-full">
+                  <input
+                    value={values.customer_name}
+                    onChange={(e) => {setValues((p) => ({ ...p, customer_name: e.target.value }));
+                      if (errors.customer_name) setErrors ((p)=>{ const copy = {...p}; delete copy.customer_name; return copy});}}
+                    
+                    placeholder="Customer name *"
+                    className={["h-10 w-full rounded-md border px-3 text-sm", 
+                    errors.customer_name ? "border-red-500 focus:border-red-600" : "focus:border-teal-600",].join(" ")}
+                  />
+                  <div className="mt-1 min-h-[16px] text-xs text-red-600">{errors.customer_name || ""}</div>
+                </div>
+                <div className="w-full">
+                    <input
+                      value={values.city}
+                      onChange={(e) => {setValues((p) => ({ ...p, city: e.target.value }));
+                        if (errors.city) setErrors ((p)=>{const copy={...p}; delete copy.city; return copy});
+                        }}
+                      placeholder="City"
+                      className="h-10 w-full rounded-md border px-3 text-sm"
+                    />
+                    <div className="mt-1 min-h-[16px] text-xs text-red-600">{errors.city || ""}</div>
+                </div>
+                <div className="w-full">
                   {/* ✅ Rep from users table */}
-                <RepSelect
-                    users={users}
-                    value={values.rep_name}
-                    onChange={(v) => setValues((p) => ({ ...p, rep_name: v }))}
-                    roleFilter="billing"   // or null if you want all
-                />
-               {/* ✅ Courier dropdown (Local/ST/blank) */}
-                {/* <CourierSelect
-                    value={values.courier_name}
-                    onChange={(v) => setValues((p) => ({ ...p, courier_name: v }))}
-                /> */}
+                <div className="w-full">
+                  <RepSelect
+                      users={users}
+                      value={values.rep_name}
+                      className="h-10 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                      onChange={(v) => {setValues((p) => ({ ...p, rep_name: v }));
+                        if (errors.rep_name) setErrors((p)=>{const copy={...p}; delete copy.rep_name; return copy})
+                      }}
+                      roleFilter="billing"   // or null if you want all
+                  />
+                </div>
+                <div className="mt-1 min-h-[16px] text-xs text-red-600">{errors.rep_name || ""}</div>
+                </div>
+                <div className="w-full">
                 <select
                   value={values.courier_name}
-                  onChange={(e) => setValues((p) => ({ ...p, courier_name: e.target.value }))}
-                  className="h-10 rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                  required
+                  onChange={(e) => {setValues((p) => ({ ...p, courier_name: e.target.value }));
+                      if (errors.courier_name) setErrors((p)=>{const copy={...p}; delete copy.courier_name; return copy})
+                  }}
+                  className="h-10 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
                 >
                   <option value="">Select courier</option>
                   <option value="ST">ST</option>
                   <option value="Professional">Professional</option>
                   <option value="Local">Local</option>
                 </select>
+                <div className="mt-1 min-h-[16px] text-xs text-red-600">{errors.courier_name || ""}</div>
+                </div>
               </div>
 
               <div className="mt-3 flex gap-2">
                 <button
                   type="button"
-                  onClick={onSave}
+                  // onClick={if (!values.courier_name) alert "Courier name required"{onSave}}
+                  // onClick={()=>{
+                  //   console.log("Courier value:", values.courier_name);
+                  //     if (!String(values.courier_name).trim()) { alert("Select Courier"); return;}
+                  //     if(!String(values.city).trim()) {alert("Enter city name"); return;}
+                  //     if(!String(values.rep_name).trim()) {alert("Select Rep Name"); return;}
+                  //  onSave();
+                    // }}
+                    onClick={onSave}
                   disabled={saving}
                   className="h-10 flex-1 rounded-md bg-teal-600 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
                 >
@@ -254,7 +297,7 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
           )}
 
           <div className="flex justify-end shrink-0">
-            <button type="button" onClick={onClose} className="h-9 rounded-md border px-3 text-xs hover:bg-gray-50">
+            <button type="button" onClick={()=>{setErrors({}); onClose()}} className="h-9 rounded-md border px-3 text-xs hover:bg-gray-50">
               Close
             </button>
           </div>

@@ -2,7 +2,9 @@
 import { useMemo } from "react";
 import { toTitleCase } from "./packingUtils";
 
-const RepSelect = ({ users = [], value, onChange, allowBlank = true, roleFilter = "billing" }) => {
+const RepSelect = ({ users = [], value, onChange, allowBlank = true, roleFilter = "billing",
+  className =""
+}) => {
   const reps = useMemo(() => {
     const list = (users || []).filter((u) => {
       if (!roleFilter) return true;
@@ -15,7 +17,7 @@ const RepSelect = ({ users = [], value, onChange, allowBlank = true, roleFilter 
     <select
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}
-      className="h-10 rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+      className={`h-10 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600 ${className} `}
     >
       {allowBlank && <option value="">Select rep</option>}
       {reps.map((u) => (
