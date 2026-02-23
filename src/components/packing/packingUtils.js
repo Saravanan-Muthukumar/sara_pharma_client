@@ -1,8 +1,8 @@
 // src/components/packing/packingUtils.js
 import moment from "moment";
 
-// export const API = "https://octopus-app-l59s5.ondigitalocean.app";
-export const API = "http://localhost:9000";
+export const API = "https://octopus-app-l59s5.ondigitalocean.app";
+// export const API = "http://localhost:9000";
 
 // ✅ NEW statuses only
 export const STATUS_TEXT = {
