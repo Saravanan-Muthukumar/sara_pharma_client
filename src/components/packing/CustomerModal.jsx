@@ -9,13 +9,11 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
   const { loading, customers, error, load, save, remove } = useCustomers();
 
   const [q, setQ] = useState("");
-
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const { users } = useUsers({ open });
   const [errors, setErrors] = useState({});
-
   const [values, setValues] = useState({
     customer_name: "",
     city: "",
@@ -71,7 +69,6 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
     setErrors(next)
     return Object.keys(next).length===0;
   }
-
 
   const onSave = async () => {
     const customer_name = toTitleCase(values.customer_name);
@@ -230,7 +227,8 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
                         if (errors.city) setErrors ((p)=>{const copy={...p}; delete copy.city; return copy});
                         }}
                       placeholder="City"
-                      className="h-10 w-full rounded-md border px-3 text-sm"
+                      className={["h-10 w-full rounded-md border px-3 text-sm",
+                        errors.city ? "border-red-500 focus:border-red-600" : "focus:border-teal-600",].join(" ")}
                     />
                     <div className="mt-1 min-h-[16px] text-xs text-red-600">{errors.city || ""}</div>
                 </div>
@@ -240,7 +238,8 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
                   <RepSelect
                       users={users}
                       value={values.rep_name}
-                      className="h-10 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                      className={["h-10 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600",
+                        errors.rep_name ? "border-red-500 fcous:border-red-600" : "focus:border-teal-600",].join(" ")}
                       onChange={(v) => {setValues((p) => ({ ...p, rep_name: v }));
                         if (errors.rep_name) setErrors((p)=>{const copy={...p}; delete copy.rep_name; return copy})
                       }}
@@ -256,7 +255,8 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
                   onChange={(e) => {setValues((p) => ({ ...p, courier_name: e.target.value }));
                       if (errors.courier_name) setErrors((p)=>{const copy={...p}; delete copy.courier_name; return copy})
                   }}
-                  className="h-10 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                  className={["h-10 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600",
+                    errors.courier_name ? "border-red-500 focus:border-red-600" : "focus:border-teal-600",].join(" ")}
                 >
                   <option value="">Select courier</option>
                   <option value="ST">ST</option>
@@ -295,7 +295,6 @@ const CustomerModal = ({ open, onClose, onRefresh }) => {
               </div>
             </div>
           )}
-
           <div className="flex justify-end shrink-0">
             <button type="button" onClick={()=>{setErrors({}); onClose()}} className="h-9 rounded-md border px-3 text-xs hover:bg-gray-50">
               Close

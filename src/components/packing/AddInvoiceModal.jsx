@@ -12,18 +12,13 @@ import { AuthContext } from "../../context/authContext";
  * - Auto-fills Sales Rep + Courier from selected customer (still editable like screenshot)
  * - Footer tip + "New invoice will start in TO_TAKE."
  */
-const AddInvoiceModal = ({
-  open,
-  onClose,
-  currentUsername,
-  rowsToday = [],
-  onSaved,
-}) => {
+
+const AddInvoiceModal = ({ open, onClose, currentUsername, rowsToday = [], onSaved, mode }) => {
   const { currentUser } = useContext(AuthContext); // if you use currentUser in context
   const createdBy = String(currentUsername || currentUser?.username || "").trim();
-
   // form values (match screenshot fields)
   const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [invoiceId, setInvoiceId] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().slice(0, 10));
   const [noOfProducts, setNoOfProducts] = useState("");
   const [invoiceValue, setInvoiceValue] = useState("");
@@ -32,12 +27,14 @@ const AddInvoiceModal = ({
   const [courierName, setCourierName] = useState("");
   const [salesRep, setSalesRep] = useState("");
   const customerRef = useRef(null);
-
-  // typeahead state
+  const [searchNo, setSearchNo] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [editInvoice, setEditInvoice] = useState(false);
+  const [errors, setErrors] = useState({});
   const [customers, setCustomers] = useState([]);
   const [loadingCustomers, setLoadingCustomers] = useState(false);
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
-
   const [saving, setSaving] = useState(false);
   const [checking, setChecking] = useState(false);
   const [sameCustomerInvoices, setSameCustomerInvoices] = useState([]);
@@ -56,8 +53,10 @@ const AddInvoiceModal = ({
   // reset when opening
   useEffect(() => {
     if (!open) return;
+    setEditInvoice(false)
+    setErrors({});
     setSaving(false);
-
+    setSearchNo("")
     setInvoiceNumber("");
     setInvoiceDate(new Date().toISOString().slice(0, 10));
     setNoOfProducts("");
@@ -66,7 +65,6 @@ const AddInvoiceModal = ({
     setCustomerId(null);
     setCourierName("");
     setSalesRep("");
-
     setCustomers([]);
     setShowCustomerDropdown(false);
     setSameCustomerInvoices([]);
@@ -95,6 +93,68 @@ const AddInvoiceModal = ({
     setSameCustomerInvoices(uniq);
     setChecking(false);
   }, [open, customerName, rowsToday]);
+
+  const fetchInvoice = async () => {
+    const invoice_number = String(searchNo || "").trim();
+    if (!invoice_number) return alert("Enter invoice number");
+
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${API}/api/packing/edit/${encodeURIComponent(invoice_number)}`);
+      setInvoiceNumber(data.invoice_number)
+      setInvoiceId(data.invoice_id)
+      setCourierName(data.courier_name)
+      setCustomerName(data.customer_name)
+      setSalesRep(data.rep_name)
+      setNoOfProducts(data.no_of_products)
+      setInvoiceValue(data.invoice_value)
+      setCustomerId(data.customer_id)
+      setEditInvoice(true)
+      setInvoiceDate(data?.invoice_date ? String(data.invoice_date).slice(0, 10) : "")
+      setShowCustomerDropdown(false);
+      
+    } catch (e) {
+      alert(e?.response?.data?.message || "Invoice not found");
+      setEditInvoice(false)
+      // setInv(emptyInv);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateInvoice = async () => {
+    if (!invoiceId) return alert("Fetch invoice first");
+    if(!validate()) return;
+
+    const payload = {
+      invoice_number: String(invoiceNumber || "").trim().toUpperCase(),
+      invoice_date: String(invoiceDate || "").trim() || null,
+      no_of_products: Number(noOfProducts),
+      invoice_value: invoiceValue === "" ? null : Number(invoiceValue),
+      customer_id: Number(customerId),
+    };
+
+    if (!payload.invoice_number) return alert("Invoice number required");
+    if (!Number.isInteger(payload.no_of_products) || payload.no_of_products <= 0)
+      return alert("No. of Products must be > 0");
+    if (!Number.isFinite(payload.customer_id) || payload.customer_id <= 0)
+      return alert("Please select a customer from the list");
+    if (payload.invoice_value !== null && (!Number.isFinite(payload.invoice_value) || payload.invoice_value < 0))
+      return alert("Invoice value must be >= 0");
+
+    setUpdating(true);
+    try {
+      const { data } = await axios.put(`${API}/api/packing/edit/${invoiceId}`, payload);
+      alert(data?.message || "Update successful");
+      onSaved?.();
+      onClose?.();
+    } catch (e) {
+      alert(e?.response?.data?.message || "Update failed");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
 
   const tipText = useMemo(() => {
     if (checking) return "Checking other invoices for this customer…";
@@ -141,6 +201,7 @@ const AddInvoiceModal = ({
     setCustomerId(c.customer_id);
     setCustomerName(c.customer_name || "");
     // auto-fill (still editable like screenshot)
+
     setSalesRep(c.rep_name || "");
     setCourierName(c.courier_name || "");
     setShowCustomerDropdown(false);
@@ -153,6 +214,7 @@ const AddInvoiceModal = ({
   };
 
   const save = async () => {
+    if(!validate()) return;
     const invoice_number = String(invoiceNumber || "").trim().toUpperCase();
     const invoice_date = String(invoiceDate || "").trim();
     const no_of_products = Number(noOfProducts);
@@ -192,6 +254,21 @@ const AddInvoiceModal = ({
     }
   };
 
+  const validate = () =>{
+    const next = {};
+    // if (!String(invoiceNumber || "").trim()) next.invoiceNumber="Enter Invoice";
+    const invNo = String(invoiceNumber || "").trim();
+      if (!/^SA\d{6}$/.test(invNo)) {
+        next.invoiceNumber = "Invoice number must be SA + 6 digits (e.g., SA123456)";
+      }
+    if (!String(customerName|| "").trim()) next.customerName="Select customer";
+    if (!String(noOfProducts|| "").trim()) next.noOfProducts="Enter value";
+    if (!String(invoiceValue|| "").trim()) next.invoiceValue="Enter value";
+
+    setErrors(next)
+    return Object.keys(next).length===0;
+  }
+
   if (!open) return null;
 
   return (
@@ -200,7 +277,7 @@ const AddInvoiceModal = ({
           {/* Header */}
           <div className="flex items-center justify-between border-b px-4 py-3">
             <div>
-              <div className="text-sm font-semibold text-gray-900">Add Bills (Invoice)</div>
+              <div className="text-sm font-semibold text-gray-900">{mode === "Edit" ? "Edit Bill" : "Add Bills"}</div>
               <div className="text-xs text-gray-500">Billing Staff</div>
             </div>
             <button
@@ -212,33 +289,67 @@ const AddInvoiceModal = ({
               ✕
             </button>
           </div>
+
+          {mode==="Edit" && 
+          <div>
+              <div className="rounded-lg p-3 mb-5">
+                <div className="text-xs font-semibold text-gray-700 mb-2">Enter Invoice Number</div>
+                <div className="flex gap-2">
+                  <input
+                    value={searchNo}
+                    onChange={(e) => setSearchNo(e.target.value)}
+                    placeholder="SA023274"
+                    className="h-10 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={fetchInvoice}
+                    disabled={loading}
+                    className="h-10 rounded-md bg-teal-600 px-4 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
+                  >
+                    {loading ? "..." : "Edit"}
+                  </button>
+                </div>
+              </div>
+          </div>
+          }
     
           {/* Body */}
-          <div className="px-4 py-3">
+          {(mode ==="Add" || editInvoice) && <div className="px-4 py-3">
             {/* Form card */}
             <div className="rounded-lg border bg-white p-4 shadow-sm">
               <div className="mb-3 text-sm font-semibold text-gray-900">Add Invoice</div>
     
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div>
                 <input
                   placeholder="Invoice Number *"
                   value={invoiceNumber}
-                  onChange={(e) => setInvoiceNumber(e.target.value)}
-                  className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                  onChange={(e) => {setInvoiceNumber(e.target.value)
+                     if (errors.invoiceNumber) setErrors ((p)=>{ const copy = {...p}; delete copy.invoiceNumber; return copy});}}
+                  className={["h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600",
+                    errors.invoiceNumber ? "border-red-500 focus:border-red-600" : "foucs:border-teal-600",].join(" ")}
                 />
+                  <div className="mt-1 min-h-[16px] text-xs text-red-600">{errors.invoiceNumber || ""}</div>
+                </div>
 
                 {/* Customer typeahead */}
                 <div className="relative" ref={customerRef}>
+                  <div>
                   <input
                     placeholder="Customer Name *"
                     value={customerName}
-                    onChange={(e) => onChangeCustomer(e.target.value)}
+                    onChange={(e) => {onChangeCustomer(e.target.value)
+                      if (errors.customerName) setErrors ((p)=>{ const copy = {...p}; delete copy.customerName; return copy});}}
                     onFocus={() => {
                       if (customerName.trim().length >= 2) setShowCustomerDropdown(true);
                     }}
                     
-                    className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                    className={["h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600",
+                      errors.customerName ? "border-red-500 focus:border-red-600" : "focus:border-teal",].join(" ")}
                   />
+                  <div className="mt-1 min-h-[16px] text-xs text-red-600">{errors.customerName || ""}</div>
+                  </div>
     
                   {showCustomerDropdown && (
                     <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-md border bg-white shadow-lg">
@@ -284,35 +395,64 @@ const AddInvoiceModal = ({
                   className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
                 />
 
+                <div>
                 <input
+                    type="number"
+                    min="1"
                     placeholder="No. of Products *"
                     value={noOfProducts}
-                    onChange={(e) => setNoOfProducts(e.target.value)}
+                    onChange={(e) => {setNoOfProducts(e.target.value)
+                      if (errors.noOfProducts) setErrors ((p)=>{ const copy = {...p}; delete copy.noOfProducts; return copy});}}
                     inputMode="numeric"
-                    className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                    className={["h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600",
+                      errors.noOfProducts ? "border-red-500 focus:border-red-600" : "focus:border-teal-600",].join(" ")}
                   />
-    
+                  <div className="mt-1 min-h-[16px] text-xs text-red-600">{errors.noOfProducts || ""}</div>
+                </div>
+
+                <div>      
                 <input
-                  placeholder="Invoice Value (optional)"
+                  type="number"
+                  min="1"
+                  placeholder="Invoice Value"
                   value={invoiceValue}
-                  onChange={(e) => setInvoiceValue(e.target.value)}
+                  onChange={(e) => {setInvoiceValue(e.target.value)
+                    if (errors.invoiceValue) setErrors ((p)=>{ const copy = {...p}; delete copy.invoiceValue; return copy});}}
                   inputMode="decimal"
-                  className="h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                  className={["h-11 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600",
+                    errors.invoiceValue ? "border-red-500 focus:border-red-600" : "focus:border-teal-600",].join(" ")}
                 />
+                <div className="mt-1 min-h-[16px] text-xs text-red-600">{errors.invoiceValue || ""}</div>
+                </div>
+
+                {mode==="Edit" && <input
+                  type="date"
+                  value={invoiceDate}
+                  onChange={(e)=>setInvoiceDate(e.target.value)}
+                  className="h-10 w-full rounded-md border px-3 text-sm outline-none focus:border-teal-600"
+                />}
     
 
               </div>
     
               <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-                <button
+                {mode==="Add" && <button
                   type="button"
                   onClick={save}
                   disabled={saving}
                   className="h-11 rounded-md bg-teal-600 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
                 >
                   {saving ? "Saving..." : "Save"}
-                </button>
-    
+                </button>}
+                {mode==="Edit" && <button
+                  type="button"
+                  onClick={updateInvoice}
+                  disabled={updating}
+                  className="h-10 rounded-md bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                >
+                  {updating ? "Updating..." : "Update"}
+                </button>}
+                
                 <button
                   type="button"
                   onClick={onClose}
@@ -332,8 +472,9 @@ const AddInvoiceModal = ({
             <div className="mt-2 text-[11px] text-gray-500">
               New invoice will start in <b>TO_TAKE</b>.
             </div>
-          </div>
+          </div>}
         </div>
+        
       </div>
     );
 };

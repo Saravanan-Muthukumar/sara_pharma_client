@@ -160,7 +160,7 @@ const MarkPackedBoxModal = ({ open, onClose, invoice_id, username, onSaved }) =>
               {!isLocal && (
                 <input
                   type="number"
-                  min="0"
+                  min="1"
                   step="1"
                   required
                   placeholder="Weight in Kg"

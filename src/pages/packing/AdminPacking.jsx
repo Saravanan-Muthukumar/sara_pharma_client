@@ -13,7 +13,7 @@ import { BILLING_TABS } from "../../components/packing/packingUtils";
 import { getBillingCounts, getBillingListByTab } from "../../components/packing/billingSelectors";
 import { buildStaffReport } from "../../components/packing/packingUtils";
 import AdminTimelineModal from "../../components/packing/AdminTimelineModal";
-import EditInvoiceModal from "../../components/packing/EditnvoiceModal";
+// import EditInvoiceModal from "../../components/packing/EditnvoiceModal";
 import AuditTrailModal from "../../components/packing/AuditTrailModal";
 
 
@@ -23,11 +23,12 @@ const AdminPacking = () => {
   const isAdmin = String(currentUser?.role || "").toLowerCase() === "admin";
   const [activeTab, setActiveTab] = useState("OUTSTANDING");
   const [customerOpen, setCustomerOpen] = useState(false);
-  const [addInvoiceOpen, setAddInvoiceOpen] = useState(false);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
-  const [editInvoiceOpen, setEditInvoiceOpen] = useState(false);
+  // const [editInvoiceOpen, setEditInvoiceOpen] = useState(false);
   const [auditTrialOpen, setAuditTrialOpen] = useState(false);
+  const [invoiceMode, setInvoiceMode] = useState("");
 
   // today string for modal header (matches /api/invoices/today)
   const selectedDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -93,14 +94,14 @@ const AdminPacking = () => {
 
             <button
               type="button"
-              onClick={() => setAddInvoiceOpen(true)}
+              onClick={() => {setInvoiceOpen(true); setInvoiceMode("Add")}}
               className="h-8 rounded-md bg-teal-600 px-3 text-xs font-semibold text-white hover:bg-teal-700"
             >
               Add Bills
             </button>
             <button
               type="button"
-              onClick={() => setEditInvoiceOpen(true)}
+              onClick={() => {setInvoiceOpen(true); setInvoiceMode("Edit")}}
               className="h-8 rounded-md bg-teal-600 px-3 text-xs font-semibold text-white hover:bg-teal-700"
             >
               Edit Bill
@@ -150,12 +151,22 @@ const AdminPacking = () => {
       />
 
       <AddInvoiceModal
-        open={addInvoiceOpen}
-        onClose={() => setAddInvoiceOpen(false)}
+        open={invoiceOpen}
+        mode = {invoiceMode}
+        onClose={() => setInvoiceOpen(false)}
         currentUsername={currentUsername}
         rowsToday={rows}
         onSaved={refresh}
       />
+
+      {/* <AddInvoiceModal
+        open={invoiceOpen}
+        mode = "edit"
+        onClose={() => setInvoiceOpen(false)}
+        currentUsername={currentUsername}
+        rowsToday={rows}
+        onSaved={refresh}
+      /> */}
 
       {/* ✅ Existing StaffReportModal */}
       <StaffReportModal
@@ -170,11 +181,11 @@ const AdminPacking = () => {
         onClose={() => setTimelineOpen(false)}
         username={currentUsername}
       />
-      <EditInvoiceModal
+      {/* <AddInvoiceModal
         open={editInvoiceOpen}
-        onClose={() => setEditInvoiceOpen(false)}
+        onClose={() => setAddInvoiceOpen(false)}
         onSaved={refresh}
-      />
+      /> */}
       <AuditTrailModal
         open={auditTrialOpen}
         onClose={() => setAuditTrialOpen(false)}
