@@ -33,7 +33,8 @@ const BillingStaffPacking = () => {
   const [activeTab, setActiveTab] = useState(TAB.MY_JOB);
 
   const [customerOpen, setCustomerOpen] = useState(false);
-  const [addInvoiceOpen, setAddInvoiceOpen] = useState(false);
+  const [invoiceOpen, setInvoiceOpen] = useState(false); 
+  const [invoiceMode, setInvoiceMode] = useState("");
 
   const { rows, loading, error, refresh } = useInvoicesToday();
   const actions = usePackingActions({ currentUsername, refresh });
@@ -96,7 +97,8 @@ const BillingStaffPacking = () => {
 
             <button
               type="button"
-              onClick={() => setAddInvoiceOpen(true)}
+              onClick={() => {setInvoiceOpen(true); setInvoiceMode("Add")}}
+              // onClick={() => setAddInvoiceOpen(true)}
               className="h-8 rounded-md bg-teal-600 px-3 text-xs font-semibold text-white hover:bg-teal-700"
             >
               Add Bills
@@ -167,8 +169,9 @@ const BillingStaffPacking = () => {
       />
 
       <AddInvoiceModal
-        open={addInvoiceOpen}
-        onClose={() => setAddInvoiceOpen(false)}
+        open={invoiceOpen}
+        mode = {invoiceMode}
+        onClose={() => setInvoiceOpen(false)}
         currentUsername={currentUsername}
         rowsToday={rows}
         onSaved={refresh}
