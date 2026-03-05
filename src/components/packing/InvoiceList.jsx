@@ -91,6 +91,7 @@ const InvoiceCard = ({
 
   if (!disableActions) {
     if (mode === "TO_TAKE" && status === "TO_TAKE") {
+      // console.log(invoice_row)
       actionBtn = (
         <button
           type="button"

@@ -136,6 +136,7 @@ const Navbar = () => {
                   <NavLink to="/packing" onClick={closeMenu}>
                     PACKING
                   </NavLink>
+
                   <NavLink to="/feedback" onClick={closeMenu}>
                     FEEDBACK
                   </NavLink>

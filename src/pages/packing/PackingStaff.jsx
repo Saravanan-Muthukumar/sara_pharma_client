@@ -43,7 +43,9 @@ const PackingStaff = () => {
   const toVerify = useMemo(() => sortAscByInvoice(getToVerify(rows)), [rows]);
 
   const myJobCount = myJob.length;
-  const disableStartButtons = myJobCount >= 2;
+  const toVerifyCount = toVerify.length;
+  const disableStartButtons = myJobCount >= 12;
+  const disableToTakeButton = toVerifyCount >=2 ;
 
   const totals = useMemo(() => getMyHeaderTotals(rows, currentUsername), [rows, currentUsername]);
 
@@ -71,10 +73,19 @@ const PackingStaff = () => {
   return (
     <div className="mx-auto w-full max-w-6xl px-3 py-4">
       <PackingTopBar title="Packing" username={currentUsername} totals={totals} onRefresh={refresh} onOpenTimeline={() => setTimelineOpen(true)} />
-
+      {actions.actionError && (
+          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+            {actions.actionError}
+          </div>
+        )}
       {disableStartButtons && (
         <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
           You already have <span className="font-semibold">2 invoices</span> in progress. Finish one to start another.
+        </div>
+      )}
+      {disableToTakeButton && (
+        <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          There are <span className="font-semibold">2 invoices</span> to verify, Please clear before taking new bill.
         </div>
       )}
 
