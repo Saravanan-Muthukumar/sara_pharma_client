@@ -75,6 +75,12 @@ const Navbar = () => {
                 >
                   FEEDBACK
                 </Link>
+                <Link
+                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-teal-700"
+                  to="/purchaseissues"
+                >
+                  PURCHASE ISSUES
+                </Link>
               </>
             )}
 
@@ -139,6 +145,10 @@ const Navbar = () => {
 
                   <NavLink to="/feedback" onClick={closeMenu}>
                     FEEDBACK
+                  </NavLink>
+
+                  <NavLink to="/purchaseissues" onClick={closeMenu}>
+                    PURCHASE ISSUES
                   </NavLink>
 
                   <div className="mt-2 flex items-center justify-between px-3">

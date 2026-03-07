@@ -120,6 +120,41 @@ const Home = () => {
               </div>
             </div>
           </Link>
+          <Link
+            to="/purchaseissues"
+            className="
+              group
+              rounded-2xl
+              border
+              border-gray-200
+              bg-white/70
+              p-4
+              shadow-sm
+              backdrop-blur
+              transition
+              active:scale-[0.99]
+            "
+          >
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-gray-50 border border-gray-200 p-2 text-indigo-600">
+                <PackageIcon className="h-6 w-6" />
+              </div>
+
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-base font-semibold text-gray-900">
+                    Purchase Issues
+                  </p>
+                  <span className="text-gray-400 transition group-active:translate-x-0.5">
+                    ›
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-gray-500">
+                  Call • Inform • Follow Up
+                </p>
+              </div>
+            </div>
+          </Link>
 
           {/* Future tile placeholder (keep or remove) */}
           <div className="rounded-2xl border border-dashed border-gray-200 bg-white/40 p-4">
