@@ -32,14 +32,14 @@ const PurchaseReturnPage = () => {
 
   const menuRef = useRef(null);
 
-  const loadSuppliers = async () => {
+  const loadSuppliers = useCallback(async () => {
     try {
       const res = await axios.get(`${API}/api/suppliers`);
       setSuppliers(Array.isArray(res.data) ? res.data : []);
     } catch {
       setSuppliers([]);
     }
-  };
+  }, []);
 
   const loadReturns = useCallback(async () => {
     try {
@@ -62,6 +62,10 @@ const PurchaseReturnPage = () => {
       setLoading(false);
     }
   }, [q, statusFilter, supplierFilter]);
+
+  useEffect(() => {
+    loadSuppliers();
+  }, [loadSuppliers]);
 
   useEffect(() => {
     loadReturns();
