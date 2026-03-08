@@ -282,7 +282,15 @@ const PurchaseReturnPage = () => {
           ) : returns.length === 0 ? (
             <div className="px-3 py-4 text-sm text-gray-500">No purchase returns</div>
           ) : (
-            returns.map((row) => {
+            [...returns]
+            .sort((a, b) =>
+            String(b.purchase_return_no || "").localeCompare(
+                String(a.purchase_return_no || ""),
+                undefined,
+                { numeric: true }
+            )
+            )
+            .map((row) => {
               const diff =
                 Number(row.purchase_return_amount || 0) -
                 Number(row.supplier_sales_return_amount || 0);
