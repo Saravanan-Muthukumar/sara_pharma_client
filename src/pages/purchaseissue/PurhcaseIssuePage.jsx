@@ -1,5 +1,5 @@
 // src/pages/purchase/PurchaseIssuePage.jsx
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { API, toTitleCase } from "../../components/packing/packingUtils";
 import SupplierModal from "../../components/purchaseissue/SupplierModal";
@@ -44,18 +44,19 @@ const PurchaseIssuePage = () => {
   const [editingIssue, setEditingIssue] = useState(null);
   const [selectedIssue, setSelectedIssue] = useState(null);
 
-  const loadSuppliers = async () => {
+  const loadSuppliers = useCallback(async () => {
     try {
       const res = await axios.get(`${API}/api/suppliers`);
       setSuppliers(Array.isArray(res.data) ? res.data : []);
     } catch {
       setSuppliers([]);
     }
-  };
+  }, []);
 
-  const loadIssues = async () => {
+  const loadIssues = useCallback(async () => {
     try {
       setLoading(true);
+      setError("");
       const res = await axios.get(`${API}/api/purchase-issues`, {
         params: {
           q: q || undefined,
@@ -71,12 +72,15 @@ const PurchaseIssuePage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [q, statusFilter, supplierFilter, issueTypeFilter]);
 
   useEffect(() => {
     loadSuppliers();
+  }, [loadSuppliers]);
+  
+  useEffect(() => {
     loadIssues();
-  }, []);
+  }, [loadIssues]);
 
   const summary = useMemo(() => {
     const total = issues.length;
@@ -155,7 +159,11 @@ const PurchaseIssuePage = () => {
 
         </div>
 
-
+        {error && (
+            <div className="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                {error}
+            </div>
+            )}
       {/* FILTER BAR */}
       <div className="rounded-md border bg-white px-3 py-3 shadow-sm">
         <div className="grid grid-cols-1 gap-2 xl:grid-cols-[1.2fr_1fr_1fr_1fr_auto_auto_auto]">
@@ -262,7 +270,12 @@ const PurchaseIssuePage = () => {
               <div className="text-center">Action</div>
             </div>
 
-            {issues.map((row) => (
+            {loading ? (
+                <div className="px-3 py-4 text-sm text-gray-500">Loading....</div>
+            ) : issues === 0 ? (
+                <div className="px-3 py-4 text-sm text-gray-500">No Issues</div>
+            ) :
+                issues.map((row) => (
               <div
                 key={row.issue_id}
                 className="grid grid-cols-8 items-center border-t px-3 py-2 text-[11px] hover:bg-gray-50"
