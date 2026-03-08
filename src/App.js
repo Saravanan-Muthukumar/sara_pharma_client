@@ -22,6 +22,7 @@ import AdminPacking from "./pages/packing/AdminPacking";
 import { AuthContext } from "./context/authContext";
 import DayEndCourierPage from "./pages/packing/DayEndCourierPage";
 import PurchaseIssuePage from "./pages/purchaseissue/PurhcaseIssuePage";
+import PurchaseReturnPage from "./pages/purchaseissue/PurchaseReturnPage";
 
 const Layout = () => (
   <div className="min-h-screen flex flex-col bg-white">
@@ -71,6 +72,7 @@ const router = createBrowserRouter([
       { path: "/packing", element: <PackingGate /> },   
       { path: "/feedback", element: <FeedBackPage /> },
       { path: "/purchaseissues", element: <PurchaseIssuePage /> },
+      { path: "/purchasereturn", element: <PurchaseReturnPage /> },
       { path: "/packing/staff", element: <RequireAuth><Packingstaff /></RequireAuth> },
       { path: "/packing/billing", element: <RequireAuth><BillingStaffPacking /></RequireAuth> },
       { path: "/packing/admin", element: <RequireAuth><AdminPacking /></RequireAuth> },

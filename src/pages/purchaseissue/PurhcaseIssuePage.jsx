@@ -272,7 +272,7 @@ const PurchaseIssuePage = () => {
 
             {loading ? (
                 <div className="px-3 py-4 text-sm text-gray-500">Loading....</div>
-            ) : issues === 0 ? (
+            ) : issues.length === 0 ? (
                 <div className="px-3 py-4 text-sm text-gray-500">No Issues</div>
             ) :
                 issues.map((row) => (
