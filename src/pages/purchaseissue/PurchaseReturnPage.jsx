@@ -29,6 +29,7 @@ const PurchaseReturnPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [financialYear, setFinancialYear] = useState("");
 
   const menuRef = useRef(null);
 
@@ -51,17 +52,21 @@ const PurchaseReturnPage = () => {
           q: q || undefined,
           status: statusFilter || undefined,
           supplier_id: supplierFilter || undefined,
+          financial_year: financialYear || undefined,
         },
       });
   
       setReturns(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
-      setError(e?.response?.data?.message || "Failed to load purchase returns");
+      setError(
+        e?.response?.data?.message ||
+        "Failed to load purchase returns"
+      );
       setReturns([]);
     } finally {
       setLoading(false);
     }
-  }, [q, statusFilter, supplierFilter]);
+  }, [q, statusFilter, supplierFilter, financialYear]);
 
   useEffect(() => {
     loadSuppliers();
@@ -210,9 +215,16 @@ const PurchaseReturnPage = () => {
             </div>
 
             <div className="flex justify-center">
-              <div className="flex h-9 w-full items-center justify-center rounded-md bg-white px-3 text-[11px] text-gray-500 ring-1 ring-gray-300">
-                All Dates
-              </div>
+              <select
+                value={financialYear}
+                onChange={(e) => setFinancialYear(e.target.value)}
+                className="h-9 w-full rounded-md bg-white px-3 text-left text-[11px] text-gray-700 outline-none ring-1 ring-gray-300"
+              >
+                <option value="">All Financial Years</option>
+                <option value="2025-2026">FY 2025-26</option>
+                <option value="2026-2027">FY 2026-27</option>
+                <option value="2027-2028">FY 2027-28</option>
+              </select>
             </div>
 
             <div className="flex flex-col items-center">
